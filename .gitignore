@@ -1,0 +1,20 @@
+# Backend: Specify files/folders to ignore in Git
+# Dependency directories
+node_modules/
+.env
+
+# Logs
+logs
+*.log
+npm-debug.log*
+
+# System files
+.DS_Store
+Thumbs.db
+
+# IDE settings
+.vscode/
+.idea/
+
+# Optional: OS specific
+*.swp

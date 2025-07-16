@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>User Dashboard</title>
+</head>
+<body>
+    <h1>Welcome User!</h1>
+    <p>This is the user dashboard.</p>
+</body>
+</html>
+<script>
+    const role = localStorage.getItem('role');
+    if (role !== 'user') {
+        alert('Unauthorized access. Redirecting to login.');
+        window.location.href = '/';
+    }
+</script>
+<button id="logoutBtn">Logout</button>
+
+<script>
+    document.getElementById('logoutBtn').addEventListener('click', () => {
+        localStorage.clear();
+        window.location.href = '/';
+    });
+</script>
