@@ -6,20 +6,7 @@
 <body>
     <h1>Welcome Admin!</h1>
     <p>This is the admin dashboard.</p>
+    <button id="logoutBtn">Logout</button>
+    <script src="/js/admin.js"></script>
 </body>
 </html>
-<script>
-    const role = localStorage.getItem('role');
-    if (role !== 'admin') {
-        alert('Unauthorized access. Redirecting to login.');
-        window.location.href = '/';
-    }
-</script>
-<button id="logoutBtn">Logout</button>
-
-<script>
-    document.getElementById('logoutBtn').addEventListener('click', () => {
-        localStorage.clear();
-        window.location.href = '/';
-    });
-</script>
