@@ -3,12 +3,35 @@
 
 const express = require('express');
 const router = express.Router();
-const { register, login, listUsers } = require('../controllers/authController');
+const { 
+    register, 
+    login, 
+    refreshToken, 
+    getProfile, 
+    updateProfile, 
+    listUsers, 
+    logout 
+} = require('../controllers/authController');
+const { 
+    validateRegistration, 
+    validateLogin 
+} = require('../middleware/validationMiddleware');
+const { 
+    authenticateToken, 
+    requireRole 
+} = require('../middleware/authMiddleware');
 
-router.post('/register', register);
-router.post('/login', login);
+// Public routes (no authentication required)
+router.post('/register', validateRegistration, register);
+router.post('/login', validateLogin, login);
+router.post('/refresh', refreshToken);
 
-// NEW: get all users
-router.get('/users', listUsers);
+// Protected routes (authentication required)
+router.get('/profile', authenticateToken, getProfile);
+router.put('/profile', authenticateToken, updateProfile);
+router.post('/logout', authenticateToken, logout);
+
+// Admin only routes
+router.get('/users', authenticateToken, requireRole('admin'), listUsers);
 
 module.exports = router;
