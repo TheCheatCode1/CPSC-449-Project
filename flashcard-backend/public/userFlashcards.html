@@ -87,13 +87,13 @@
 </head>
 <body>
     <div id="sidebar">
-        <div class="sidebar-item" onclick="window.location.href='/user.html'"><span class="sidebar-icon">🏠</span><span class="label">Home</span></div>
+        <div class="sidebar-item" id="homeLink"><span class="sidebar-icon">🏠</span><span class="label">Home</span></div>
         <div class="sidebar-item"><span class="sidebar-icon">📚</span><span class="label">Your Library</span></div>
         <div class="sidebar-item"><span class="sidebar-icon">🔔</span><span class="label">Notifications</span></div>
         <hr style="width: 80%; border-color: #444;">
         <div class="sidebar-item"><span class="sidebar-icon">➕</span><span class="label">New Folder</span></div>
         <hr style="width: 80%; border-color: #444;">
-        <div class="sidebar-item" onclick="window.location.href='/userFlashcards.html'">
+        <div class="sidebar-item" id="flashcardsLink">
             <span class="sidebar-icon">🃏</span><span class="label">Flashcards</span>
         </div>
         <div class="sidebar-item"><span class="sidebar-icon">📄</span><span class="label">Study Guides</span></div>
@@ -106,63 +106,14 @@
         <h1>Flashcards</h1>
 
         <input type="text" id="vocabWord" placeholder="Enter a word">
-        <button onclick="lookupWord()">Auto-fill Definition</button>
+        <button id="lookupBtn">Auto-fill Definition</button>
 
         <p id="partOfSpeech"></p>
         <p id="definition"></p>
 
-        <button onclick="saveFlashcard()">Save Flashcard</button>
+        <button id="saveBtn">Save Flashcard</button>
     </div>
 
-    <script>
-        const role = localStorage.getItem('role');
-        if (role !== 'user') {
-            alert('Unauthorized access. Redirecting to login.');
-            window.location.href = '/';
-        }
-
-        const sidebar = document.getElementById('sidebar');
-        sidebar.addEventListener('mouseenter', () => {
-            sidebar.classList.add('expanded');
-        });
-        sidebar.addEventListener('mouseleave', () => {
-            sidebar.classList.remove('expanded');
-        });
-
-        document.getElementById('logoutButton').addEventListener('click', () => {
-            localStorage.clear();
-            window.location.href = '/';
-        });
-
-        async function lookupWord() {
-            const word = document.getElementById('vocabWord').value;
-            const res = await fetch(`/api/flashcards/lookup/${word}`);
-            const data = await res.json();
-
-            if (res.ok) {
-                document.getElementById('partOfSpeech').innerText = `Part of Speech: ${data.partOfSpeech}`;
-                document.getElementById('definition').innerText = `Definition: ${data.definition}`;
-            } else {
-                alert(data.message);
-            }
-        }
-
-        async function saveFlashcard() {
-            const word = document.getElementById('vocabWord').value;
-            const partOfSpeech = document.getElementById('partOfSpeech').innerText.split(': ')[1];
-            const definition = document.getElementById('definition').innerText.split(': ')[1];
-
-            const userId = 'LOGGED_IN_USER_ID'; // Replace dynamically if needed
-
-            const res = await fetch('/api/flashcards/save', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ userId, word, partOfSpeech, definition })
-            });
-
-            const data = await res.json();
-            alert(data.message);
-        }
-    </script>
+    <script src="/js/userFlashcards.js"></script>
 </body>
 </html>
