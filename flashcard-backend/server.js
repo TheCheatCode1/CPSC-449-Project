@@ -1,11 +1,12 @@
 // Backend: Main Express server setup
 
-const authRoutes = require('./routes/authRoutes');
-
 require('dotenv').config();
 const express = require('express');
 const connectDB = require('./config/db');
 const path = require('path');
+
+const authRoutes = require('./routes/authRoutes');
+const flashcardRoutes = require('./routes/flashcardRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -16,7 +17,9 @@ connectDB();
 // Middleware to parse JSON
 app.use(express.json());
 
+// Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/flashcards', flashcardRoutes);
 
 // Test route to verify API is running
 app.get('/api/health', (req, res) => {
