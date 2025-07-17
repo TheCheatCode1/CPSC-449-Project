@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>User Dashboard</title>
+    <title>User Flashcards</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -79,11 +79,15 @@
             align-items: center;
             text-align: center;
         }
+
+        #main-content input, #main-content button {
+            margin: 5px 0;
+        }
     </style>
 </head>
 <body>
     <div id="sidebar">
-        <div class="sidebar-item"><span class="sidebar-icon">🏠</span><span class="label">Home</span></div>
+        <div class="sidebar-item" id="homeLink"><span class="sidebar-icon">🏠</span><span class="label">Home</span></div>
         <div class="sidebar-item"><span class="sidebar-icon">📚</span><span class="label">Your Library</span></div>
         <div class="sidebar-item"><span class="sidebar-icon">🔔</span><span class="label">Notifications</span></div>
         <hr style="width: 80%; border-color: #444;">
@@ -99,9 +103,17 @@
     </div>
 
     <div id="main-content">
-        <h1 id="welcome">Hello, User</h1>
+        <h1>Flashcards</h1>
+
+        <input type="text" id="vocabWord" placeholder="Enter a word">
+        <button id="lookupBtn">Auto-fill Definition</button>
+
+        <p id="partOfSpeech"></p>
+        <p id="definition"></p>
+
+        <button id="saveBtn">Save Flashcard</button>
     </div>
 
-    <script src="/js/user.js"></script>
+    <script src="/js/userFlashcards.js"></script>
 </body>
 </html>
