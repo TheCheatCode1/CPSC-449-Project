@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>View Flashcard Set</title>
+</head>
+<body>
+  <h2 id="setTitle">Loading...</h2>
+  <div id="cardsList"></div>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const setId = params.get('id');
+
+    async function loadSet() {
+      const set = await fetch(`/api/flashcards/sets`).then(res => res.json());
+      const selected = set.find(s => s._id === setId);
+      document.getElementById('setTitle').textContent = selected.title;
+
+      const cards = await fetch(`/api/flashcards/cards/by-set/${setId}`).then(res => res.json());
+
+      const container = document.getElementById('cardsList');
+      for (const card of cards) {
+        const div = document.createElement('div');
+        div.innerHTML = `<strong>Q:</strong> ${card.front}<br><strong>A:</strong> ${card.back}<hr>`;
+        container.appendChild(div);
+      }
+    }
+
+    loadSet();
+  </script>
+</body>
+</html>

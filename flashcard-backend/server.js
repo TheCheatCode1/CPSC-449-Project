@@ -1,5 +1,3 @@
-// Backend: Main Express server setup
-
 require('dotenv').config();
 const express = require('express');
 const connectDB = require('./config/db');
@@ -7,6 +5,7 @@ const path = require('path');
 
 const authRoutes = require('./routes/authRoutes');
 const flashcardRoutes = require('./routes/flashcardRoutes');
+const quizRoutes = require('./routes/quizRoutes'); // move this here 👈
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -14,27 +13,28 @@ const PORT = process.env.PORT || 5000;
 // Connect to MongoDB
 connectDB();
 
-// Middleware to parse JSON
+// Middleware
 app.use(express.json());
 
-// Routes
+// API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/flashcards', flashcardRoutes);
+app.use('/api/quizzes', quizRoutes); // 👈 MOVE THIS ABOVE STATIC FILES
 
-// Test route to verify API is running
+// Test route
 app.get('/api/health', (req, res) => {
     res.json({ message: 'API is running' });
 });
 
-// Serve static frontend files from /public
+// Serve frontend static files
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Fallback to frontend index.html for any unknown route
+// Catch-all route (must be last!)
 app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// Start the server
+// Start server
 app.listen(PORT, () => {
     console.log(`🚀 Server running on http://localhost:${PORT}`);
 });
