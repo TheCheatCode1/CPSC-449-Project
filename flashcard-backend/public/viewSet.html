@@ -10,90 +10,228 @@
       padding: 0;
       display: flex;
     }
+
     #sidebar {
       height: 100vh;
       width: 60px;
       background-color: #111;
-      color: white;
       overflow-x: hidden;
       transition: width 0.3s;
+      color: white;
       display: flex;
       flex-direction: column;
       padding-top: 20px;
       position: relative;
     }
+
     #sidebar.expanded {
       width: 200px;
     }
+
+    .sidebar-item {
+      display: flex;
+      align-items: center;
+      width: 100%;
+      padding: 10px;
+      cursor: pointer;
+      color: #818181;
+      transition: background-color 0.3s, color 0.3s;
+    }
+
+    .sidebar-item:hover {
+      background-color: #333;
+      color: white;
+    }
+
+    .sidebar-icon {
+      font-size: 20px;
+      width: 30px;
+      text-align: center;
+    }
+
+    .label {
+      opacity: 0;
+      white-space: nowrap;
+      overflow: hidden;
+      transition: opacity 0.3s ease, margin-left 0.3s ease;
+      margin-left: 0;
+    }
+
+    #sidebar.expanded .label {
+      opacity: 1;
+      margin-left: 10px;
+    }
+
+    #sidebar:not(.expanded) .label {
+      display: none;
+    }
+
+    #logoutButton {
+      margin-top: auto;
+      margin-bottom: 30px;
+    }
+
     #main-content {
       flex: 1;
       padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+
+    #flashcard {
+      width: 300px;
+      height: 200px;
+      border: 1px solid #ccc;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 20px 0;
+      font-size: 24px;
+      cursor: pointer;
+      user-select: none;
+      transition: transform 0.6s;
+      background-color: #f8f8f8;
+    }
+
+    #controls {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+    }
+
+    button {
+      padding: 5px 10px;
+    }
+
+    #counter {
+      font-weight: bold;
     }
   </style>
 </head>
 <body>
 
-  <div id="sidebar-container"></div>
+<div id="sidebar-container"></div>
 
-  <div id="main-content">
-    <h2 id="setTitle">Loading...</h2>
-    <div id="cardsList"></div>
+<div id="main-content">
+  <h2 id="setTitle">Loading...</h2>
+
+  <div id="flashcardContainer">
+    <div id="flashcard">Loading...</div>
+    <div id="controls">
+      <button onclick="prevCard()">⬅️</button>
+      <span id="counter">0/0</span>
+      <button onclick="nextCard()">➡️</button>
+      <button onclick="shuffleCards()">🔀 Shuffle</button>
+    </div>
   </div>
+</div>
 
-  <script>
-    const params = new URLSearchParams(window.location.search);
-    const setId = params.get('id');
+<script>
+  const params = new URLSearchParams(window.location.search);
+  const setId = params.get('id');
 
-    async function loadSet() {
-      if (!setId) {
-        document.getElementById('setTitle').textContent = 'No set selected.';
-        return;
-      }
+  let cards = [];
+  let currentIndex = 0;
+  let showingFront = true;
 
-      const sets = await fetch(`/api/flashcards/sets`).then(res => res.json());
-      const selected = sets.find(s => s._id === setId);
-
-      if (!selected) {
-        document.getElementById('setTitle').textContent = 'Set not found.';
-        return;
-      }
-
-      document.getElementById('setTitle').textContent = selected.title;
-
-      const cards = await fetch(`/api/flashcards/cards/by-set/${setId}`).then(res => res.json());
-
-      const container = document.getElementById('cardsList');
-      for (const card of cards) {
-        const div = document.createElement('div');
-        div.innerHTML = `<strong>Q:</strong> ${card.front}<br><strong>A:</strong> ${card.back}<hr>`;
-        container.appendChild(div);
-      }
+  async function loadSet() {
+    if (!setId) {
+      document.getElementById('setTitle').textContent = 'No set selected.';
+      return;
     }
 
-    loadSet();
-  </script>
+    const sets = await fetch(`/api/flashcards/sets`).then(res => res.json());
+    const selected = sets.find(s => s._id === setId);
 
-  <script>
-    fetch('/sidebar.html')
-      .then(response => response.text())
-      .then(html => {
-        document.getElementById('sidebar-container').innerHTML = html;
+    if (!selected) {
+      document.getElementById('setTitle').textContent = 'Set not found.';
+      return;
+    }
 
-        const sidebar = document.getElementById('sidebar');
-        if (sidebar) {
-          sidebar.addEventListener('mouseenter', () => sidebar.classList.add('expanded'));
-          sidebar.addEventListener('mouseleave', () => sidebar.classList.remove('expanded'));
-        }
+    document.getElementById('setTitle').textContent = selected.title;
 
-        const logoutButton = document.getElementById('logoutButton');
-        if (logoutButton) {
-          logoutButton.addEventListener('click', () => {
-            localStorage.clear();
-            window.location.href = '/';
-          });
-        }
-      });
-  </script>
+    cards = await fetch(`/api/flashcards/cards/by-set/${setId}`).then(res => res.json());
+    currentIndex = 0;
+    showingFront = true;
+    displayCard();
+  }
+
+  function displayCard() {
+    if (cards.length === 0) {
+      document.getElementById('flashcard').textContent = 'No cards available.';
+      document.getElementById('counter').textContent = `0/0`;
+      return;
+    }
+
+    const currentCard = cards[currentIndex];
+    document.getElementById('flashcard').textContent = showingFront ? currentCard.front : currentCard.back;
+    document.getElementById('counter').textContent = `${currentIndex + 1}/${cards.length}`;
+  }
+
+  document.getElementById('flashcard').addEventListener('click', () => {
+    showingFront = !showingFront;
+    displayCard();
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.code === 'Space') {
+      e.preventDefault();
+      showingFront = !showingFront;
+      displayCard();
+    }
+  });
+
+  function nextCard() {
+    if (cards.length === 0) return;
+    currentIndex = (currentIndex + 1) % cards.length;
+    showingFront = true;
+    displayCard();
+  }
+
+  function prevCard() {
+    if (cards.length === 0) return;
+    currentIndex = (currentIndex - 1 + cards.length) % cards.length;
+    showingFront = true;
+    displayCard();
+  }
+
+  function shuffleCards() {
+    for (let i = cards.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [cards[i], cards[j]] = [cards[j], cards[i]];
+    }
+    currentIndex = 0;
+    showingFront = true;
+    displayCard();
+  }
+
+  loadSet();
+</script>
+
+<script>
+  fetch('/sidebar.html')
+    .then(response => response.text())
+    .then(html => {
+      document.getElementById('sidebar-container').innerHTML = html;
+
+      const sidebar = document.getElementById('sidebar');
+      if (sidebar) {
+        sidebar.addEventListener('mouseenter', () => sidebar.classList.add('expanded'));
+        sidebar.addEventListener('mouseleave', () => sidebar.classList.remove('expanded'));
+      }
+
+      const logoutButton = document.getElementById('logoutButton');
+      if (logoutButton) {
+        logoutButton.addEventListener('click', () => {
+          localStorage.clear();
+          window.location.href = '/';
+        });
+      }
+    });
+</script>
 
 </body>
 </html>
