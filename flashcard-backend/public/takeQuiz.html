@@ -57,9 +57,11 @@
 
     async function loadQuiz() {
       if (!quizId) {
-        titleEl.textContent = 'Invalid quiz link.';
-        return;
-      }
+      alert('No quiz selected. Redirecting to quizzes.');
+      window.location.href = '/createQuiz.html'; // Or wherever you want to redirect
+      return;
+    }
+
 
       try {
         const res = await fetch(`/api/quizzes/${quizId}`);

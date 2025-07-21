@@ -3,6 +3,24 @@ const router = express.Router();
 const Set = require('../models/set');
 const Card = require('../models/card');
 
+const axios = require('axios');
+
+// Lookup word from dictionary API
+router.get('/lookup/:word', async (req, res) => {
+    const word = req.params.word;
+    try {
+        const response = await axios.get(`https://api.dictionaryapi.dev/api/v2/entries/en/${word}`);
+        const data = response.data[0];
+        const result = {
+            word: data.word,
+            partOfSpeech: data.meanings[0]?.partOfSpeech || 'N/A',
+            definition: data.meanings[0]?.definitions[0]?.definition || 'No definition found'
+        };
+        res.json(result);
+    } catch (error) {
+        res.status(404).json({ message: 'Word not found' });
+    }
+});
 
 // Create a new flashcard set
 router.post('/sets', async (req, res) => {

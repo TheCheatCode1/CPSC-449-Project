@@ -1,19 +1,63 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8">
   <title>View Flashcard Set</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+    }
+    #sidebar {
+      height: 100vh;
+      width: 60px;
+      background-color: #111;
+      color: white;
+      overflow-x: hidden;
+      transition: width 0.3s;
+      display: flex;
+      flex-direction: column;
+      padding-top: 20px;
+      position: relative;
+    }
+    #sidebar.expanded {
+      width: 200px;
+    }
+    #main-content {
+      flex: 1;
+      padding: 20px;
+    }
+  </style>
 </head>
 <body>
-  <h2 id="setTitle">Loading...</h2>
-  <div id="cardsList"></div>
+
+  <div id="sidebar-container"></div>
+
+  <div id="main-content">
+    <h2 id="setTitle">Loading...</h2>
+    <div id="cardsList"></div>
+  </div>
 
   <script>
     const params = new URLSearchParams(window.location.search);
     const setId = params.get('id');
 
     async function loadSet() {
-      const set = await fetch(`/api/flashcards/sets`).then(res => res.json());
-      const selected = set.find(s => s._id === setId);
+      if (!setId) {
+        document.getElementById('setTitle').textContent = 'No set selected.';
+        return;
+      }
+
+      const sets = await fetch(`/api/flashcards/sets`).then(res => res.json());
+      const selected = sets.find(s => s._id === setId);
+
+      if (!selected) {
+        document.getElementById('setTitle').textContent = 'Set not found.';
+        return;
+      }
+
       document.getElementById('setTitle').textContent = selected.title;
 
       const cards = await fetch(`/api/flashcards/cards/by-set/${setId}`).then(res => res.json());
@@ -28,5 +72,28 @@
 
     loadSet();
   </script>
+
+  <script>
+    fetch('/sidebar.html')
+      .then(response => response.text())
+      .then(html => {
+        document.getElementById('sidebar-container').innerHTML = html;
+
+        const sidebar = document.getElementById('sidebar');
+        if (sidebar) {
+          sidebar.addEventListener('mouseenter', () => sidebar.classList.add('expanded'));
+          sidebar.addEventListener('mouseleave', () => sidebar.classList.remove('expanded'));
+        }
+
+        const logoutButton = document.getElementById('logoutButton');
+        if (logoutButton) {
+          logoutButton.addEventListener('click', () => {
+            localStorage.clear();
+            window.location.href = '/';
+          });
+        }
+      });
+  </script>
+
 </body>
 </html>

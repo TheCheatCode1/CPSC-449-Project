@@ -12,137 +12,153 @@
         }
 
         #sidebar {
-            height: 100vh;
-            width: 60px;
-            background-color: #111;
-            overflow-x: hidden;
-            transition: width 0.3s;
-            color: white;
-            display: flex;
-            flex-direction: column;
-            padding-top: 20px;
-            position: relative;
-        }
+    height: 100vh;
+    width: 60px;
+    background-color: #111;
+    overflow-x: hidden;
+    transition: width 0.3s;
+    color: white;
+    display: flex;
+    flex-direction: column;
+    padding-top: 20px;
+    position: relative;
+    }
 
-        #sidebar.expanded {
-            width: 200px;
-        }
+    #sidebar.expanded {
+        width: 200px;
+    }
 
-        .sidebar-item {
-            display: flex;
-            align-items: center;
-            width: 100%;
-            padding: 10px;
-            cursor: pointer;
-            color: #818181;
-            transition: background-color 0.3s, color 0.3s;
-        }
+    .sidebar-item {
+        display: flex;
+        align-items: center;
+        width: 100%;
+        padding: 10px;
+        cursor: pointer;
+        color: #818181;
+        transition: background-color 0.3s, color 0.3s;
+    }
 
-        .sidebar-item:hover {
-            background-color: #333;
-            color: white;
-        }
+    .sidebar-item:hover {
+        background-color: #333;
+        color: white;
+    }
 
-        .sidebar-icon {
-            font-size: 20px;
-            width: 30px;
-            text-align: center;
-        }
+    .sidebar-icon {
+        font-size: 20px;
+        width: 30px;
+        text-align: center;
+    }
 
-        .label {
-            opacity: 0;
-            white-space: nowrap;
-            overflow: hidden;
-            transition: opacity 0.3s ease, margin-left 0.3s ease;
-            margin-left: 0;
-        }
+    .label {
+        opacity: 0;
+        white-space: nowrap;
+        overflow: hidden;
+        transition: opacity 0.3s ease, margin-left 0.3s ease;
+        margin-left: 0;
+    }
 
-        #sidebar.expanded .label {
-            opacity: 1;
-            margin-left: 10px;
-        }
+    #sidebar.expanded .label {
+        opacity: 1;
+        margin-left: 10px;
+    }
 
-        #sidebar:not(.expanded) .label {
-            display: none;
-        }
+    #sidebar:not(.expanded) .label {
+        display: none;
+    }
 
-        #logoutButton {
-            margin-top: auto;
-            margin-bottom: 30px;
-        }
+    #logoutButton {
+        margin-top: auto;
+        margin-bottom: 30px;
+    }
 
-        #main-content {
-            flex: 1;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            text-align: center;
-        }
 
-        #main-content input, #main-content button {
-            margin: 5px 0;
-        }
-    </style>
-</head>
-<body>
-    <div id="sidebar">
-        <div class="sidebar-item"><span class="sidebar-icon">🏠</span><span class="label">Home</span></div>
-        <div class="sidebar-item"><span class="sidebar-icon">📚</span><span class="label">Your Library</span></div>
-        <div class="sidebar-item"><span class="sidebar-icon">🔔</span><span class="label">Notifications</span></div>
-        <hr style="width: 80%; border-color: #444;">
-        <div class="sidebar-item"><span class="sidebar-icon">➕</span><span class="label">New Folder</span></div>
-        <hr style="width: 80%; border-color: #444;">
-        <div class="sidebar-item" onclick="window.location.href='/userFlashcards.html'">
-            <span class="sidebar-icon">🃏</span><span class="label">Flashcards</span>
-        </div>
-        <div class="sidebar-item" onclick="window.location.href='/createSet.html'">
-            <span class="sidebar-icon">🃏</span><span class="label">Create Flashcards</span>
-        </div>
-        <div class="sidebar-item" onclick="window.location.href='/createQuiz.html'">
-            <span class="sidebar-icon">📄</span><span class="label">Study Guides</span>
-        </div>
-        <div class="sidebar-item" onclick="window.location.href='/createQuiz.html'">
-            <span class="sidebar-icon">📝</span><span class="label">Quizzes</span>
-        </div>
+            #main-content {
+                flex: 1;
+                padding: 20px;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+            }
 
-        <div class="sidebar-item" id="logoutButton"><span class="sidebar-icon">🚪</span><span class="label">Logout</span></div>
-    </div>
+            input, textarea, button {
+                margin: 5px 0;
+                width: 300px;
+                padding: 5px;
+            }
+
+            .flashcard, .set-card {
+                border: 1px solid #ccc;
+                padding: 10px;
+                margin: 10px 0;
+                width: 350px;
+                text-align: left;
+            }
+
+            #cardsContainer {
+                margin-top: 20px;
+                width: 350px;
+            }
+        </style>
+    </head>
+    <body>
+
+    <div id="sidebar-container"></div>
 
     <div id="main-content">
         <h1>Flashcards</h1>
 
+        <h3>Auto-fill Definition</h3>
         <input type="text" id="vocabWord" placeholder="Enter a word">
-        <button onclick="lookupWord()">Auto-fill Definition</button>
+        <button onclick="lookupWord()">Lookup Definition</button>
 
         <p id="partOfSpeech"></p>
         <p id="definition"></p>
-
         <button onclick="saveFlashcard()">Save Flashcard</button>
+
+        <hr>
+
+        <h3>Create a Flashcard Set</h3>
+        <input type="text" id="setTitle" placeholder="Set Title">
+        <textarea id="setDescription" placeholder="Set Description"></textarea>
+
+        <div id="cardsContainer"></div>
+        <button onclick="addCard()">+ Add Card</button>
+        <button onclick="saveSet()">Save Set</button>
+
+        <hr>
+
+        <h3>Saved Flashcard Sets</h3>
+        <div id="savedSets"></div>
     </div>
 
     <script>
-        const role = localStorage.getItem('role');
-        if (role !== 'user') {
-            alert('Unauthorized access. Redirecting to login.');
-            window.location.href = '/';
-        }
+        // Inject sidebar
+        fetch('/sidebar.html')
+            .then(response => response.text())
+            .then(html => {
+                document.getElementById('sidebar-container').innerHTML = html;
 
-        const sidebar = document.getElementById('sidebar');
-        sidebar.addEventListener('mouseenter', () => {
-            sidebar.classList.add('expanded');
-        });
-        sidebar.addEventListener('mouseleave', () => {
-            sidebar.classList.remove('expanded');
-        });
+                const sidebar = document.getElementById('sidebar');
+                if (sidebar) {
+                    sidebar.addEventListener('mouseenter', () => sidebar.classList.add('expanded'));
+                    sidebar.addEventListener('mouseleave', () => sidebar.classList.remove('expanded'));
+                }
 
-        document.getElementById('logoutButton').addEventListener('click', () => {
-            localStorage.clear();
-            window.location.href = '/';
-        });
+                const logoutButton = document.getElementById('logoutButton');
+                if (logoutButton) {
+                    logoutButton.addEventListener('click', () => {
+                        localStorage.clear();
+                        window.location.href = '/';
+                    });
+                }
+            });
 
+        // Auto-fill definition
         async function lookupWord() {
             const word = document.getElementById('vocabWord').value;
+            if (!word) return alert('Enter a word first');
+
             const res = await fetch(`/api/flashcards/lookup/${word}`);
             const data = await res.json();
 
@@ -159,17 +175,89 @@
             const partOfSpeech = document.getElementById('partOfSpeech').innerText.split(': ')[1];
             const definition = document.getElementById('definition').innerText.split(': ')[1];
 
-            const userId = 'LOGGED_IN_USER_ID'; // Replace dynamically if needed
+            if (!word || !partOfSpeech || !definition) {
+                alert('Lookup a word first');
+                return;
+            }
 
             const res = await fetch('/api/flashcards/save', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ userId, word, partOfSpeech, definition })
+                body: JSON.stringify({
+                    userId: 'LOGGED_IN_USER_ID', // Replace dynamically
+                    word, partOfSpeech, definition
+                })
             });
 
             const data = await res.json();
             alert(data.message);
         }
+
+        function addCard(front = '', back = '') {
+            const div = document.createElement('div');
+            div.className = 'set-card';
+            div.innerHTML = `
+                <input type="text" placeholder="Front" class="front" value="${front}" required>
+                <input type="text" placeholder="Back" class="back" value="${back}" required>
+            `;
+            document.getElementById('cardsContainer').appendChild(div);
+        }
+
+        async function saveSet() {
+            const title = document.getElementById('setTitle').value;
+            const description = document.getElementById('setDescription').value;
+            const fronts = document.querySelectorAll('.front');
+            const backs = document.querySelectorAll('.back');
+
+            if (!title || fronts.length === 0) {
+                alert('Please add a title and at least one card.');
+                return;
+            }
+
+            const setRes = await fetch('/api/flashcards/sets', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ title, description, createdBy: 'Anonymous' })
+            });
+            const setData = await setRes.json();
+
+            for (let i = 0; i < fronts.length; i++) {
+                await fetch('/api/flashcards/cards', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        front: fronts[i].value,
+                        back: backs[i].value,
+                        setId: setData._id
+                    })
+                });
+            }
+
+            alert('Flashcard Set Saved');
+            loadSavedSets();
+        }
+
+        async function loadSavedSets() {
+            const res = await fetch('/api/flashcards/sets');
+            const sets = await res.json();
+
+            const container = document.getElementById('savedSets');
+            container.innerHTML = '';
+            sets.forEach(set => {
+                const div = document.createElement('div');
+                div.className = 'flashcard';
+                div.innerHTML = `
+                    <strong>${set.title}</strong><br>
+                    ${set.description}<br>
+                    <a href="/viewSet.html?id=${set._id}">View Set</a>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        loadSavedSets();
+        addCard();
     </script>
+
 </body>
 </html>
