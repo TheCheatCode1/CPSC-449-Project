@@ -81,23 +81,41 @@
                 text-align: center;
             }
 
-            input, textarea, button {
+            input, textarea {
                 margin: 5px 0;
-                width: 300px;
+                width: 750px;
+
                 padding: 5px;
+                font-size: 1rem;
+            }
+
+            .card-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 8px;
+            }
+
+            .card-row textarea {
+            width: 350px;       /* fixed starting width */
+            height: 50px;       /* fixed starting height */
+            padding: 10px;
+            font-size: 1rem;
+            overflow: hidden;   /* no scrollbars */
+            resize: none;       /* no manual grab‑resize */
+            box-sizing: border-box;
             }
 
             .flashcard, .set-card {
                 border: 1px solid #ccc;
                 padding: 10px;
                 margin: 10px 0;
-                width: 350px;
+                width: 800px;
                 text-align: left;
             }
 
             #cardsContainer {
-                margin-top: 20px;
-                width: 350px;
+                margin-top: 20px auto;
+                width: 760px;
             }
 
             #flashcard-container {
@@ -181,55 +199,120 @@
             }
 
 
+            .card-row input {
+            width: calc(50% - 5px);  /* (700px - 10px gap) ÷ 2 = 345px each */
+            padding: 10px;
+            font-size: 1rem;
+            }
+
+            .card-editor {
+            position: relative;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            padding: 40px 12px 12px;   /* extra 20px on top */
+            margin-bottom: 20px;
+            background: #fafafa;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            }
+
+            /* 2. Trash‑can button in the corner */
+            .trash-btn {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: none;
+            border: none;
+            font-size: 16px;
+            cursor: pointer;
+            }
+
+            .drag-handle {
+            position: absolute;
+            top: 14px;
+            right: 50px;
+            cursor: grab;
+            font-size: 18px;
+            user-select: none;
+            }
+
+            .drag-handle:active {
+            cursor: grabbing;
+            }
+
+            /* 3. Disabled state when ≤2 cards */
+            .trash-btn.disabled {
+            opacity: 0.7;
+            pointer-events: none;
+            }
+
+            .card-number {
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            background: transparent;   /* no colored box */
+            color: #333;               /* pick a text color you like */
+            font-size: 0.9rem;
+            padding: 0;                /* remove the padding */
+            border-radius: 0;          /* no rounding */
+            user-select: none;
+            margin: 2px 0 0 2px;
+            }
+            
+
         </style>
+
+        
     </head>
     <body>
 
     <div id="sidebar-container"></div>
 
     <div id="main-content">
-        <h1>Flashcards</h1>
 
-        <h3>Auto-fill Definition</h3>
-        <input type="text" id="vocabWord" placeholder="Enter a word">
-        <button onclick="lookupWord()">Lookup Definition</button>
+        
+        <h1>Create a new flashcard set</h1>
+        <input id="setTitle" type="text" placeholder="Title" />
+        <textarea id="setDescription" rows="3" placeholder="Description"></textarea>
 
-        <p id="partOfSpeech"></p>
-        <p id="definition"></p>
-        <button onclick="saveFlashcard()">Save Flashcard</button>
 
-        <hr>
-
-        <h3>Create a Flashcard Set</h3>
-        <input type="text" id="setTitle" placeholder="Set Title">
-        <textarea id="setDescription" placeholder="Set Description"></textarea>
 
         <div id="cardsContainer"></div>
-        <button onclick="addCard()">+ Add Card</button>
+        <button onclick="addCard()">Add a card</button>
         <button onclick="saveSet()">Save Set</button>
 
-        <hr>
+
 
         <h3>Saved Flashcard Sets</h3>
         <div id="savedSets"></div>
-        
-        <!-- Flashcard Viewer -->
-        <div id="flashcard-container">
-            <div id="flashcard" onclick="flipCard()">Front of Card</div>
-
-            <div id="controls">
-                <button onclick="prevCard()">⬅</button>
-                <span id="card-counter">1 / X</span>
-                <button onclick="nextCard()">➡</button>
-                <button onclick="shuffleCards()">🔀 Shuffle</button>
-            </div>
-        </div>
 
 
     </div>
 
     <script>
-        // Inject sidebar
+        
+    function loadDraft() {
+    const draft = JSON.parse(localStorage.getItem('flashcardDraft') || 'null');
+    if (!draft) return;
+
+    document.getElementById('setTitle').value       = draft.title || '';
+    document.getElementById('setDescription').value = draft.description || '';
+
+    const container = document.getElementById('cardsContainer');
+    container.innerHTML = '';
+    draft.cards.forEach(c => addCard(c.front, c.back));
+
+    // <- new code here
+    document
+        .querySelectorAll('.card-row textarea')
+        .forEach(el => {
+        el.style.height = 'auto';
+        el.style.height = el.scrollHeight + 'px';
+        });
+    }
+
+
+
+
         fetch('/sidebar.html')
             .then(response => response.text())
             .then(html => {
@@ -250,111 +333,233 @@
                 }
             });
 
-        // Auto-fill definition
-        async function lookupWord() {
-            const word = document.getElementById('vocabWord').value;
-            if (!word) return alert('Enter a word first');
 
-            const res = await fetch(`/api/flashcards/lookup/${word}`);
-            const data = await res.json();
 
-            if (res.ok) {
-                document.getElementById('partOfSpeech').innerText = `Part of Speech: ${data.partOfSpeech}`;
-                document.getElementById('definition').innerText = `Definition: ${data.definition}`;
-            } else {
-                alert(data.message);
-            }
+       function addCard(front = '', back = '') {
+  // 1) Create card wrapper
+  const wrapper = document.createElement('div');
+  wrapper.className = 'card-editor';
+
+  // 2) Number badge
+  const badge = document.createElement('div');
+  badge.className = 'card-number';
+  wrapper.appendChild(badge);
+
+  // 3) Drag handle
+  const dragHandle = document.createElement('span');
+  dragHandle.className = 'drag-handle';
+  dragHandle.innerText = '≡';
+  wrapper.appendChild(dragHandle);
+
+  // 4) Trash button
+  const trash = document.createElement('button');
+  trash.className = 'trash-btn';
+  trash.innerText = '🗑️';
+  trash.onclick = () => {
+    wrapper.remove();
+    updateCardNumbers();
+    updateTrashButtons();
+    saveDraft();
+  };
+  wrapper.appendChild(trash);
+
+  // 5) Row container for inputs
+  const row = document.createElement('div');
+  row.className = 'card-row';
+  
+function makeAutoResize(el) {
+  el.addEventListener('input', () => {
+    el.style.height = 'auto';                    // clear previous inline height
+    el.style.height = el.scrollHeight + 'px';    // grow/shrink to fit
+  });
+}
+
+
+
+  // TERM textarea
+const termInput = document.createElement('textarea');
+termInput.className     = 'front';
+termInput.placeholder   = 'Enter term';
+termInput.value         = front;
+termInput.style.overflow = 'hidden';
+termInput.style.resize   = 'none';
+makeAutoResize(termInput);
+termInput.addEventListener('input', saveDraft);
+
+// DEF textarea
+const defInput = document.createElement('textarea');
+defInput.className     = 'back';
+defInput.placeholder   = 'Enter definition';
+defInput.value         = back;
+defInput.style.overflow = 'hidden';
+defInput.style.resize   = 'none';
+makeAutoResize(defInput);
+defInput.addEventListener('input', saveDraft);
+
+
+  // 8) Append inputs to row
+  row.append(termInput, defInput);
+  wrapper.appendChild(row);
+
+  // 9) Auto‑Fill button
+  const autoFillBtn = document.createElement('button');
+  autoFillBtn.textContent = 'Auto Fill';
+
+autoFillBtn.onclick = async () => {
+  const word = termInput.value.trim();
+  if (!word || word.includes(' ')) {
+    alert('Auto‑fill only works with a single word.');
+    return;
+  }
+
+  let data;
+  try {
+    const res = await fetch(`/api/flashcards/lookup/${word}`);
+    if (!res.ok) {
+      // server responded with error status
+      const err = await res.json().catch(() => ({}));
+      alert(err.message || 'Definition not found.');
+      return;
+    }
+    data = await res.json();
+  } catch (err) {
+    console.error(err);
+    alert('Auto‑fill failed. Check your connection.');
+    return;
+  }
+
+  defInput.value = `${data.definition} (${data.partOfSpeech})`;
+  // 👇 fire the resize you already wired up in makeAutoResize()
+  defInput.dispatchEvent(new Event('input'));
+
+  saveDraft();
+};
+
+  wrapper.appendChild(autoFillBtn);
+
+  
+        function autoResizeField(textarea) {
+        // reset to auto to recalc
+        textarea.style.height = 'auto';
+        // then set height to fit content
+        textarea.style.height = textarea.scrollHeight + 'px';
         }
 
-        async function saveFlashcard() {
-            const word = document.getElementById('vocabWord').value;
-            const partOfSpeech = document.getElementById('partOfSpeech').innerText.split(': ')[1];
-            const definition = document.getElementById('definition').innerText.split(': ')[1];
 
-            if (!word || !partOfSpeech || !definition) {
-                alert('Lookup a word first');
-                return;
-            }
+  // 10) Add to DOM and update state
+  document.getElementById('cardsContainer').appendChild(wrapper);
+  updateCardNumbers();
+  updateTrashButtons();
+  saveDraft();
+}
 
-            const res = await fetch('/api/flashcards/save', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    userId: 'LOGGED_IN_USER_ID', // Replace dynamically
-                    word, partOfSpeech, definition
-                })
-            });
 
-            const data = await res.json();
-            alert(data.message);
-        }
+async function saveSet() {
+  const title       = document.getElementById('setTitle').value.trim();
+  const description = document.getElementById('setDescription').value;
+  // Gather all card rows
+  const cards = Array.from(document.querySelectorAll('.card-row')).map(row => ({
+    front: row.querySelector('.front').value.trim(),
+    back:  row.querySelector('.back').value.trim()
+  }));
+  // Skip only those where BOTH term and definition are empty
+  const validCards = cards.filter(c => c.front || c.back);
 
-        function addCard(front = '', back = '') {
-            const div = document.createElement('div');
-            div.className = 'set-card';
-            div.innerHTML = `
-                <input type="text" placeholder="Front" class="front" value="${front}" required>
-                <input type="text" placeholder="Back" class="back" value="${back}" required>
-            `;
-            document.getElementById('cardsContainer').appendChild(div);
-        }
+  // 1) Title required
+  if (!title) {
+    alert('Please enter a title for your flashcard set.');
+    return;
+  }
+  // 2) At least one non‑blank card required
+  if (validCards.length === 0) {
+    alert('Please add at least one card (term or definition).');
+    return;
+  }
 
-        async function saveSet() {
-            const title = document.getElementById('setTitle').value;
-            const description = document.getElementById('setDescription').value;
-            const fronts = document.querySelectorAll('.front');
-            const backs = document.querySelectorAll('.back');
+  // 3) Create the set
+  const setRes = await fetch('/api/flashcards/sets', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ title, description, createdBy: 'Anonymous' })
+  });
+  const setData = await setRes.json();
 
-            if (!title || fronts.length === 0) {
-                alert('Please add a title and at least one card.');
-                return;
-            }
+  // 4) Upload each valid card
+  for (const c of validCards) {
+    await fetch('/api/flashcards/cards', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        front: c.front,
+        back:  c.back,
+        setId: setData._id
+      })
+    });
+  }
 
-            const setRes = await fetch('/api/flashcards/sets', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ title, description, createdBy: 'Anonymous' })
-            });
-            const setData = await setRes.json();
+  // 5) Notify user
+  alert('Flashcard Set Saved');
 
-            for (let i = 0; i < fronts.length; i++) {
-                await fetch('/api/flashcards/cards', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        front: fronts[i].value,
-                        back: backs[i].value,
-                        setId: setData._id
-                    })
-                });
-            }
+  // 6) Clear draft, title & description, and reset UI
+  clearDraft();
+  document.getElementById('setTitle').value = '';
+  document.getElementById('setDescription').value = '';
+  document.getElementById('cardsContainer').innerHTML = '';
+  addCard();  // start with one blank card
 
-            alert('Flashcard Set Saved');
-            loadSavedSets();
-        }
+  // 7) Reload saved‑sets list
+  loadSavedSets();
+}
 
-        async function loadSavedSets() {
-            const res = await fetch('/api/flashcards/sets');
-            const sets = await res.json();
+async function deleteSet(setId) {
+  if (!confirm('Are you sure you want to delete this flashcard set?')) return;
+  const res = await fetch(`/api/flashcards/sets/${setId}`, { method: 'DELETE' });
+  if (!res.ok) {
+    alert('Failed to delete set.');
+    return;
+  }
+  loadSavedSets();
+}
 
-            const container = document.getElementById('savedSets');
-            container.innerHTML = '';
-            sets.forEach(set => {
+async function loadSavedSets() {
+  const res = await fetch('/api/flashcards/sets');
+  const sets = await res.json();
+
+  const container = document.getElementById('savedSets');
+  container.innerHTML = '';
+  sets.forEach(set => {
     const div = document.createElement('div');
     div.className = 'flashcard';
+    // add a trash button in top-right
     div.innerHTML = `
-                <strong>${set.title}</strong><br>
-                ${set.description}<br>
-                <a href="/viewSet.html?id=${set._id}">View Set</a>
-                <button onclick="loadSetToStudy('${set._id}')">Study Set</button>
-            `;
-            container.appendChild(div);
-        });
-
-        }
+      <button 
+        class="set-trash-btn" 
+        title="Delete set" 
+        style="float:right; background:none; border:none; cursor:pointer;"
+        onclick="deleteSet('${set._id}')"
+      >🗑️</button>
+      <strong>${set.title}</strong><br>
+      ${set.description}<br>
+      <a href="/viewSet.html?id=${set._id}">View Set</a>
+      <button onclick="loadSetToStudy('${set._id}')">Study Set</button>
+    `;
+    container.appendChild(div);
+  });
+}
 
         loadSavedSets();
-        addCard();
+        loadDraft();       // rebuild any in‑progress cards
+        if (document.querySelectorAll('.card-editor').length === 0) {
+        addCard();       // ensure at least one card if no draft
+        }
+
+         document
+        .getElementById('setTitle')
+        .addEventListener('input', saveDraft);
+        document
+        .getElementById('setDescription')
+        .addEventListener('input', saveDraft);
+
 
 
         let currentSetCards = [];
@@ -373,6 +578,23 @@
             showingFront = true;
             displayCurrentCard();
         }
+
+        function saveDraft() {
+        const title       = document.getElementById('setTitle').value;
+        const description = document.getElementById('setDescription').value;
+        const cards = Array.from(document.querySelectorAll('.card-editor')).map(w => ({
+            front: w.querySelector('.front').value,
+            back:  w.querySelector('.back').value
+        }));
+        localStorage.setItem('flashcardDraft', JSON.stringify({ title, description, cards }));
+        }
+
+
+        // Wipe the draft once the set is actually saved
+        function clearDraft() {
+        localStorage.removeItem('flashcardDraft');
+        }
+
 
         function displayCurrentCard() {
             if (!currentSetCards.length) return;
@@ -412,14 +634,46 @@
             displayCurrentCard();
         }
 
-        document.addEventListener('keydown', (e) => {
-            if (e.code === 'Space') {
-                e.preventDefault();
-                flipCard();
-            }
+        function updateCardNumbers() {
+        document.querySelectorAll('.card-editor').forEach((wrap, i) => {
+            wrap.querySelector('.card-number').innerText = i + 1;
         });
+        }
+
+        function updateTrashButtons() {
+        const editors = document.querySelectorAll('.card-editor');
+        const canDelete = editors.length > 2;
+        editors.forEach(wrap => {
+            const btn = wrap.querySelector('.trash-btn');
+            if (canDelete) btn.classList.remove('disabled');
+            else          btn.classList.add('disabled');
+        });
+        }
+
+        
 
     </script>
+
+    <!-- SortableJS for drag & drop -->
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+    <script>
+  Sortable.create(document.getElementById('cardsContainer'), {
+    handle: '.drag-handle',
+    animation: 150,
+    onEnd: () => {
+      updateCardNumbers();
+      updateTrashButtons();
+      saveDraft();
+    }
+  });
+  // initial numbering/trash state
+  updateCardNumbers();
+  updateTrashButtons();
+  saveDraft();
+
+</script>
+
+
 
 </body>
 </html>

@@ -43,6 +43,22 @@ router.get('/sets', async (req, res) => {
   }
 });
 
+// Delete a flashcard set and its cards
+router.delete('/sets/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    // Remove all cards belonging to that set
+    await Card.deleteMany({ setId: id });
+    // Remove the set itself
+    await Set.findByIdAndDelete(id);
+    res.json({ message: 'Set deleted' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+
 // Create a new card in a set
 router.post('/cards', async (req, res) => {
   try {
