@@ -485,6 +485,7 @@ autoFillBtn.onclick = async () => {
 
 
 async function saveSet() {
+  const token = localStorage.getItem('token');
   const title       = document.getElementById('setTitle').value.trim();
   const description = document.getElementById('setDescription').value;
   // Gather all card rows
@@ -509,8 +510,10 @@ async function saveSet() {
   // 3) Create the set
   const setRes = await fetch('/api/flashcards/sets', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ title, description, createdBy: 'Anonymous' })
+    headers: { 'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+     },
+    body: JSON.stringify({ title, description})
   });
   const setData = await setRes.json();
 
@@ -518,7 +521,9 @@ async function saveSet() {
   for (const c of validCards) {
     await fetch('/api/flashcards/cards', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json',
+                  'Authorization': `Bearer ${token}`  
+       },
       body: JSON.stringify({
         front: c.front,
         back:  c.back,

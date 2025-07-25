@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const Set = require('../models/set');
 const Card = require('../models/card');
+const auth = require('../middleware/authMiddleware');
 
 const axios = require('axios');
 
@@ -39,15 +40,20 @@ router.get('/sets', async (req, res) => {
 
 
 // Create a new flashcard set
-router.post('/sets', async (req, res) => {
+router.post('/sets', auth, async (req, res) => {
   try {
-    const set = new Set(req.body);
+    const set = new Set({
+      ...req.body,
+      createdBy: req.user._id //
+    });
     await set.save();
     res.status(201).json(set);
   } catch (err) {
+    console.error('[ERROR] Failed to create set:', err.message);
     res.status(400).json({ error: err.message });
   }
 });
+
 
 // Get all sets
 router.get('/sets', async (req, res) => {
