@@ -1,29 +1,169 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Login/Register - Flashcard App</title>
+  <meta charset="UTF-8" />
+  <title>Login / Register — Flashcard App</title>
+  <style>
+    /* reset & base */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body, html { height: 100%; font-family: Arial, sans-serif; }
+
+    /* overall layout */
+    .wrapper {
+      display: flex;
+      height: 100%;
+    }
+
+    /* left panel: form card */
+    .form-panel {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: #fff;
+      padding: 2rem;
+    }
+    .card {
+    width: 100%;
+    max-width: 360px;
+    padding: 2rem;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+
+    .card h1 {
+      font-size: 1.75rem;
+      margin-bottom: 1rem;
+      text-align: center;
+    }
+    .card h2 {
+      font-size: 1.25rem;
+      margin: 1.5rem 0 0.5rem;
+    }
+    .card label {
+      display: block;
+      font-size: 0.9rem;
+      margin-bottom: 0.25rem;
+    }
+    .card input, .card select {
+      width: 100%;
+      padding: 0.5rem;
+      font-size: 1rem;
+      margin-bottom: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    .card button {
+      width: 100%;
+      padding: 0.75rem;
+      font-size: 1rem;
+      border: none;
+      border-radius: 4px;
+      background-color: #6b46c1;       /* purple */
+      color: #fff;
+      cursor: pointer;
+      margin-top: 0.5rem;
+    }
+    .card button:hover {
+      background-color: #553c9a;
+    }
+    .card .alt-action {
+      text-align: center;
+      margin-top: 1rem;
+      font-size: 0.9rem;
+    }
+    .card .alt-action a {
+      color: #6b46c1;
+      text-decoration: none;
+      margin-left: 0.25rem;
+    }
+
+    .hero-panel {
+    flex: 1;
+    background: #6b46c1 url('') center/cover no-repeat;
+    background-color: #6b46c1;
+    background-image: url('/images/index-illustration.png');
+    background-position: center;
+    background-size: cover;
+    background-repeat: no-repeat;
+    }
+    .form-container {
+    transition: opacity 0.4s ease, max-height 0.4s ease;
+    overflow: hidden;
+    max-height: 1000px;
+    }
+    .form-container.hidden {
+    opacity: 0;
+    pointer-events: none;
+    max-height: 0;
+    }
+    .form-container.visible {
+    opacity: 1;
+    pointer-events: auto;
+
+    }
+    .card {
+    position: relative;
+    }
+
+    @media (max-width: 800px) {
+      .wrapper { flex-direction: column; }
+      .hero-panel { display: none; }
+    }
+  </style>
 </head>
 <body>
-    <h1>Flashcard Study App</h1>
+  <div class="wrapper">
+    <div class="form-panel">
+      <div class="card">
+  <h1>Flashcard App</h1>
+  
 
+  <!-- REGISTER (hidden by default) -->
+  <div id="registerContainer" class="form-container hidden">
     <h2>Register</h2>
     <form id="registerForm">
-        <input type="text" id="registerUsername" placeholder="Username" required>
-        <input type="password" id="registerPassword" placeholder="Password" required>
-        <select id="registerRole">
-            <option value="user">User</option>
-            <option value="admin">Admin</option>
-        </select>
-        <button type="submit">Register</button>
+      <label>Username</label>
+      <input type="text" id="registerUsername" required />
+      <label>Password</label>
+      <input type="password" id="registerPassword" required />
+      <label>Role</label>
+      <select id="registerRole">
+        <option value="user">User</option>
+        <option value="admin">Admin</option>
+      </select>
+      <button type="submit">Register</button>
     </form>
+    <div class="alt-action">
+      Already have an account?
+      <a id="showLogin">Log in</a>
+    </div>
+  </div>
 
+  <!-- LOGIN (visible by default) -->
+  <div id="loginContainer" class="form-container visible">
     <h2>Login</h2>
     <form id="loginForm">
-        <input type="text" id="loginUsername" placeholder="Username" required>
-        <input type="password" id="loginPassword" placeholder="Password" required>
-        <button type="submit">Login</button>
+      <label>Username</label>
+      <input type="text" id="loginUsername" required />
+      <label>Password</label>
+      <input type="password" id="loginPassword" required />
+      <button type="submit">Login</button>
     </form>
+    <div class="alt-action">
+      Don’t have an account?
+      <a id="showRegister">Sign up</a>
+    </div>
+  </div>
+</div>
+
+    </div>
+   <div class="hero-panel">
+    </div>
+
+
+
 
     <script>
         document.getElementById('registerForm').addEventListener('submit', async (e) => {
@@ -72,6 +212,22 @@
             alert('Wrong username or password.');
         }
     });
+
+    const loginC    = document.getElementById('loginContainer');
+const registerC = document.getElementById('registerContainer');
+
+document.getElementById('showRegister').addEventListener('click', e => {
+  e.preventDefault();
+  loginC.classList.replace('visible','hidden');
+  registerC.classList.replace('hidden','visible');
+});
+
+document.getElementById('showLogin').addEventListener('click', e => {
+  e.preventDefault();
+  registerC.classList.replace('visible','hidden');
+  loginC.classList.replace('hidden','visible');
+});
+
 
     </script>
 </body>

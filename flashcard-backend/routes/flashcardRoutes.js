@@ -22,6 +22,22 @@ router.get('/lookup/:word', async (req, res) => {
   }
 });
 
+// GET /api/flashcards/sets?search=keyword
+router.get('/sets', async (req, res) => {
+  try {
+    const q = req.query.search;
+    let filter = {};
+    if (q) {
+      filter.title = { $regex: q, $options: 'i' };
+    }
+    const sets = await Set.find(filter).sort({ updatedAt: -1 }); 
+    res.json(sets);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+
 // Create a new flashcard set
 router.post('/sets', async (req, res) => {
   try {

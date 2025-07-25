@@ -9,6 +9,7 @@
             margin: 0;
             padding: 0;
             display: flex;
+            background-color: #B69DDD;
         }
 
         #sidebar {
@@ -72,18 +73,20 @@
     }
 
 
-            #main-content {
-                flex: 1;
-                padding: 20px;
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                text-align: center;
-            }
+#main-content {
+  flex: 1;
+  padding: 20px;
+  display: flex;                /* side-by-side columns */
+  justify-content: center;      /* center them in the page */
+  align-items: flex-start;      /* align tops */
+  gap: 2rem;                    /* space between columns */
+}
+
 
             input, textarea {
                 margin: 5px 0;
-                width: 750px;
+                width: 100%;
+                max-width: 100%;
 
                 padding: 5px;
                 font-size: 1rem;
@@ -257,6 +260,32 @@
             user-select: none;
             margin: 2px 0 0 2px;
             }
+
+            .column {
+  flex: 1;          /* each column shares available width */
+  min-width: 0;     /* prevent content from forcing overflow */
+}
+
+.column-left {
+  max-width: 900px; /* form side slightly narrower */
+}
+
+.column-right {
+  max-width: 350px;      /* your existing rule */
+  /* remove any height limit: */
+  max-height: none;
+  /* ensure overflow shows all items: */
+  overflow: visible;
+}
+
+#savedSets {
+  /* no scrollbars: */
+  overflow: visible !important;
+  /* let it grow naturally: */
+  max-height: none !important;
+}
+
+
             
 
         </style>
@@ -267,26 +296,27 @@
 
     <div id="sidebar-container"></div>
 
-    <div id="main-content">
+<div id="main-content">
 
-        
-        <h1>Create a new flashcard set</h1>
-        <input id="setTitle" type="text" placeholder="Title" />
-        <textarea id="setDescription" rows="3" placeholder="Description"></textarea>
+  <!-- LEFT COLUMN: creation form -->
+  <div class="column column-left">
+    <h1>Create a new flashcard set</h1>
+    <input id="setTitle" type="text" placeholder="Title" />
+    <textarea id="setDescription" rows="3" placeholder="Description"></textarea>
 
+    <div id="cardsContainer"></div>
+    <button onclick="addCard()">Add a card</button>
+    <button onclick="saveSet()">Save Set</button>
+  </div>
 
+  <!-- RIGHT COLUMN: saved sets list -->
+  <div class="column column-right">
+    <h3>Saved Flashcard Sets</h3>
+    <div id="savedSets"></div>
+  </div>
 
-        <div id="cardsContainer"></div>
-        <button onclick="addCard()">Add a card</button>
-        <button onclick="saveSet()">Save Set</button>
+</div>
 
-
-
-        <h3>Saved Flashcard Sets</h3>
-        <div id="savedSets"></div>
-
-
-    </div>
 
     <script>
         

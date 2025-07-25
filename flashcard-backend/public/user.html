@@ -9,6 +9,7 @@
             margin: 0;
             padding: 0;
             display: flex;
+            background-color: #B69DDD;
         }
 
         #sidebar {
@@ -79,15 +80,193 @@
             align-items: center;
             text-align: center;
         }
+
+                /* Dashboard sections */
+        .dashboard-section {
+        width: 100%;
+        margin: 1.5rem 0;
+        }
+        #dashboard-search input {
+        width: 100%;
+        max-width: 400px;
+        padding: 0.5rem 1rem;
+        font-size: 1rem;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        }
+        .stats-grid {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        flex-wrap: wrap;
+        }
+        .stat-card, .tip-card, .badge-card {
+        flex: 1 1 200px;
+        background: #fafafa;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        padding: 1rem;
+        text-align: center;
+        }
+        .stat-card h3, .tip-card h3, .badge-card h3 {
+        margin-bottom: 0.5rem;
+        font-size: 1.1rem;
+        }
+        .stat-card p {
+        font-size: 1.5rem;
+        font-weight: bold;
+        }
+        .cards-list {
+        display: flex;
+        gap: 1rem;
+        overflow-x: auto;
+        padding-bottom: 0.5rem;
+        }
+        .cards-list .set-card {
+        flex: 0 0 180px;
+        background: #fff;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        padding: 0.75rem;
+        text-align: left;
+        }
+        .cards-list .set-card h4 {
+        margin: 0 0 0.5rem;
+        font-size: 1rem;
+        }
+        .action-card {
+        background: #fff;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        padding: 1rem;
+        text-align: center;
+        }
+        .action-card button {
+        margin-top: 0.5rem;
+        padding: 0.6rem 1.2rem;
+        font-size: 1rem;
+        background: #6b46c1;
+        color: #fff;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        }
+        .action-card button:hover {
+        background: #553c9a;
+        }
+        
+
     </style>
 </head>
 <body>
     
     <div id="sidebar-container"></div>
 
-    <div id="main-content">
-        <h1 id="welcome">Hello, User</h1>
+      <div id="main-content">
+      <!-- 1. Personalized greeting -->
+      <h1 id="welcome">Hello, User</h1>
+
+<!-- 2. Quick‑start/search bar -->
+<div id="dashboard-search" class="dashboard-section" style="position: relative; max-width: 400px; margin: 0 auto 1.5rem;">
+  <input
+    type="search"
+    id="setSearch"
+    placeholder="🔍 Search your sets…"
+    autocomplete="off"
+    style="
+      width: 100%;
+      padding: 0.5rem 1rem;
+      font-size: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 6px 6px 0 0;  /* round top only */
+      outline: none;
+    "
+  />
+  <ul
+    id="searchSuggestions"
+    style="
+      position: absolute;
+      top: 100%; left: 0; right: 0;
+      background: white;
+      border: 1px solid #ccc;
+      border-top: none;           /* remove double border at the join */
+      border-radius: 0 0 6px 6px; /* round bottom corners only */
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      max-height: 200px;
+      overflow-y: auto;
+      display: none;
+      z-index: 10;
+    "
+  ></ul>
+</div>
+
+
+      <!-- 3. Today's Stats -->
+      <div id="today-stats" class="dashboard-section stats-grid">
+        <div class="stat-card">
+          <h3>Cards Reviewed</h3>
+          <p id="stat-reviewed">0</p>
+        </div>
+        <div class="stat-card">
+          <h3>Total Sets</h3>
+          <p id="stat-sets">0</p>
+        </div>
+        <div class="stat-card">
+          <h3>Streak</h3>
+          <p id="stat-streak">0 days</p>
+        </div>
+      </div>
+
+
+      <!-- 5. Recent Sets -->
+      <div id="recent-sets" class="dashboard-section">
+        <h2>📂 Recent Sets</h2>
+        <div class="cards-list" id="recentSetsList"></div>
+      </div>
+
+       <!-- 6. Generate New -->
+  <div id="generate-ai" class="dashboard-section action-card">
+    <h2>🤖 Generate New Flashcards</h2>
+    <button onclick="location.href='/aiFlashcards.html'">
+      Launch AI Generator
+    </button>
+  </div>
+
+  <!-- 7. Create / Recent Quizzes -->
+  <div id="quiz-section" class="dashboard-section">
+    <h2>📝 Quizzes</h2>
+
+    <!-- CTA to build a new quiz -->
+    <div class="action-card">
+      <h3>Create Your Own Quiz</h3>
+      <button onclick="location.href='/takeQuiz.html'">
+        New Quiz
+      </button>
     </div>
+
+    <!-- Carousel of up to 5 recent quizzes -->
+    <h3 style="margin-top:1.5rem; text-align:left;">Recent Quizzes</h3>
+    <div class="cards-list" id="recentQuizzesList">
+      <!-- JS will inject your 5 most recent quizzes here -->
+    </div>
+  </div>
+
+
+      <!-- 7. Tips & Badges -->
+      <div id="tips-badges" class="dashboard-section stats-grid">
+        <div class="tip-card">
+          <h3>💡 Tip of the Day</h3>
+          <p id="daily-tip"></p>
+        </div>
+        <div class="badge-card">
+          <h3>🏅 Your Badges</h3> //NOT IMPLEMENTED YET
+          <p id="badge-list">None yet</p>
+        </div>
+      </div>
+    </div>
+
 
     <script>
         const username = localStorage.getItem('username') || 'User';
@@ -169,29 +348,153 @@
             window.location.href = '/';
         });
     </script>
-
-        <script>
-    fetch('/sidebar.html')
-        .then(response => response.text())
-        .then(html => {
-            document.getElementById('sidebar-container').innerHTML = html;
-
-            // Activate sidebar behavior after loading
-            const sidebar = document.getElementById('sidebar');
-            sidebar.addEventListener('mouseenter', () => {
-                sidebar.classList.add('expanded');
-            });
-            sidebar.addEventListener('mouseleave', () => {
-                sidebar.classList.remove('expanded');
-            });
-
-            document.getElementById('logoutButton').addEventListener('click', () => {
-                localStorage.clear();
-                window.location.href = '/';
-            });
+<script>
+  // 1) Sidebar load & auth‑guard (unchanged)
+  fetch('/sidebar.html')
+    .then(r=>r.text())
+    .then(html=>{
+      document.getElementById('sidebar-container').innerHTML = html;
+      const sb = document.getElementById('sidebar');
+      sb.addEventListener('mouseenter', ()=>sb.classList.add('expanded'));
+      sb.addEventListener('mouseleave', ()=>sb.classList.remove('expanded'));
+      document.getElementById('logoutButton')
+        .addEventListener('click', ()=>{
+          localStorage.clear();
+          location.href = '/';
         });
+    });
+
+  // 2) Stats & tip
+  const reviewedToday = +(localStorage.getItem('reviewedToday')||0);
+  const streakDays    = +(localStorage.getItem('streakDays')||0);
+  document.getElementById('stat-reviewed').textContent = reviewedToday;
+  document.getElementById('stat-streak').textContent    = `${streakDays} days`;
+
+  const tips = [
+    'Your draft is auto‑saved as you type.',
+    'Cards auto‑resize to fit your definitions.',
+    'Hit “Auto Fill” to fetch definitions instantly.',
+    'Reorder cards by dragging the ☰ handle.',
+    'Use the search bar to quickly find sets.'
+  ];
+  document.getElementById('daily-tip').textContent =
+    tips[Math.floor(Math.random()*tips.length)];
+
+  // 3) Load your real sets
+  async function loadDashboard() {
+    try {
+      const res = await fetch('/api/flashcards/sets');
+      const sets = await res.json();
+
+      // total sets
+      document.getElementById('stat-sets').textContent = sets.length;
+
+      // recent 5 sets
+      const recent = document.getElementById('recentSetsList');
+      recent.innerHTML = '';
+      sets.slice(-5).reverse().forEach(s => {
+        const d = document.createElement('div');
+        d.className = 'set-card';
+        d.innerHTML = `
+          <h4>${s.title}</h4>
+          ${s.description ? `<small>${s.description}</small>` : ''}
+        `;
+        d.onclick = ()=> location.href = `/viewSet.html?id=${s._id}`;
+        recent.append(d);
+      });
+    } catch(e){
+      console.error('Dashboard load failed',e);
+    }
+  }
+  loadDashboard();
+  async function loadDashboard() {
+  // … your existing sets‑loading code …
+
+  // now fetch the user's quizzes
+  try {
+    const quizRes = await fetch('/api/quizzes');      // your quizzes endpoint
+    const quizzes = await quizRes.json();
+
+    const recentQ = document.getElementById('recentQuizzesList');
+    recentQ.innerHTML = '';
+
+    quizzes
+      .slice(-5)      // take last 5
+      .reverse()
+      .forEach(q => {
+        const card = document.createElement('div');
+        card.className = 'set-card';
+        card.innerHTML = `
+          <h4>${q.title}</h4>
+          ${q.description ? `<small>${q.description}</small>` : ''}
+        `;
+        card.onclick = () =>
+          location.href = `/takeQuiz.html?quizId=${q._id}`;
+        recentQ.append(card);
+      });
+  } catch (err) {
+    console.warn('Could not load quizzes:', err);
+  }
+}
+
+// after defining loadDashboard():
+loadDashboard();
+
+
+// simple debounce helper
+function debounce(fn, ms = 200) {
+  let t;
+  return (...args) => {
+    clearTimeout(t);
+    t = setTimeout(() => fn(...args), ms);
+  };
+}
+
+const input = document.getElementById('setSearch');
+const suggList = document.getElementById('searchSuggestions');
+
+input.addEventListener('input', debounce(async e => {
+  const q = e.target.value.trim();
+  if (!q) {
+    suggList.style.display = 'none';
+    return;
+  }
+  try {
+    const res = await fetch(`/api/flashcards/sets?search=${encodeURIComponent(q)}`);
+    if (!res.ok) throw 'Network error';
+    const sets = await res.json();
+    suggList.innerHTML = sets
+      .slice(0,10)
+      .map(s => `
+        <li
+          data-id="${s._id}"
+          style="padding:.5rem 1rem; cursor:pointer;"
+          onmouseover="this.style.background='#f0f0f0'"
+          onmouseout="this.style.background=''"
+        >
+          ${s.title}
+        </li>
+      `).join('');
+    suggList.style.display = sets.length ? 'block' : 'none';
+  } catch (err) {
+    console.error(err);
+    suggList.style.display = 'none';
+  }
+}), 300);
+
+suggList.addEventListener('click', e => {
+  const li = e.target.closest('li[data-id]');
+  if (!li) return;
+  window.location.href = `/viewSet.html?id=${li.dataset.id}`;
+});
+
+document.addEventListener('click', e => {
+  if (!input.contains(e.target) && !suggList.contains(e.target)) {
+    suggList.style.display = 'none';
+  }
+});
+
+
 </script>
-
-
 </body>
 </html>
