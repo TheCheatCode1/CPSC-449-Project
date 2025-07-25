@@ -90,27 +90,7 @@
             text-align: left;
         }
 
-        .loading {
-            text-align: center;
-            padding: 20px;
-            color: #666;
-        }
 
-        .error {
-            color: #dc3545;
-            background-color: #f8d7da;
-            padding: 10px;
-            border-radius: 5px;
-            margin-bottom: 20px;
-        }
-
-        .success {
-            color: #155724;
-            background-color: #d4edda;
-            padding: 10px;
-            border-radius: 5px;
-            margin-bottom: 20px;
-        }
     </style>
 </head>
 <body>
@@ -118,8 +98,6 @@
 
     <div id="main-content">
         <h1>🤖 AI Flashcard Generator</h1>
-        
-        <div id="message"></div>
 
         <form id="aiForm">
             <div>
@@ -146,7 +124,7 @@
             <button type="submit" id="generateBtn">Generate Flashcards</button>
         </form>
 
-        <div id="loading" class="loading" style="display: none;">
+        <div id="loading" style="display: none;">
             Generating flashcards... Please wait...
         </div>
 
@@ -208,13 +186,12 @@
 
                 if (response.ok) {
                     displayFlashcards(data.flashcards, topic);
-                    showMessage('Flashcards generated successfully!', 'success');
                 } else {
-                    showMessage(data.error || 'Failed to generate flashcards', 'error');
+                    alert(data.error || 'Failed to generate flashcards');
                 }
             } catch (error) {
                 console.error('Error:', error);
-                showMessage('An error occurred while generating flashcards', 'error');
+                alert('An error occurred while generating flashcards');
             } finally {
                 generateBtn.disabled = false;
                 loading.style.display = 'none';
@@ -290,27 +267,18 @@
                     });
                 }
 
-                showMessage('Flashcards saved successfully! You can view them in your Flashcards section.', 'success');
                 alert('AI Flashcards saved successfully!');
                 
-                // Change button to show it's been saved
                 saveBtn.textContent = 'Saved!';
-                saveBtn.style.backgroundColor = '#4CAF50';
-                saveBtn.style.color = 'white';
             } catch (error) {
                 console.error('Error saving flashcards:', error);
-                showMessage('Failed to save flashcards', 'error');
+                alert('Failed to save flashcards');
                 
-                // Re-enable button on error
                 saveBtn.disabled = false;
                 saveBtn.textContent = 'Save to My Flashcards';
             }
         }
 
-        function showMessage(text, type) {
-            const message = document.getElementById('message');
-            message.innerHTML = `<div class="${type}">${text}</div>`;
-        }
     </script>
 </body>
 </html> 
