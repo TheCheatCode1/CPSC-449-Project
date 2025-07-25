@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>AI Flashcards</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+        }
+
+        #sidebar-container {
+            height: 100vh;
+            width: 60px;
+            background-color: #111;
+            overflow-x: hidden;
+            transition: width 0.3s;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            padding-top: 20px;
+            position: relative;
+        }
+
+        #sidebar-container.expanded {
+            width: 200px;
+        }
+
+        .sidebar-item {
+            display: flex;
+            align-items: center;
+            width: 100%;
+            padding: 10px;
+            cursor: pointer;
+            color: #818181;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .sidebar-item:hover {
+            background-color: #333;
+            color: white;
+        }
+
+        .sidebar-icon {
+            font-size: 20px;
+            width: 30px;
+            text-align: center;
+        }
+
+        .label {
+            opacity: 0;
+            white-space: nowrap;
+            overflow: hidden;
+            transition: opacity 0.3s ease, margin-left 0.3s ease;
+            margin-left: 0;
+        }
+
+        #sidebar-container.expanded .label {
+            opacity: 1;
+            margin-left: 10px;
+        }
+
+        #sidebar-container:not(.expanded) .label {
+            display: none;
+        }
+
+        #main-content {
+            flex: 1;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
+        input, select {
+            margin: 5px 0;
+            width: 750px;
+            padding: 5px;
+            font-size: 1rem;
+        }
+
+        .flashcard {
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin: 10px 0;
+            width: 800px;
+            text-align: left;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+
+        .error {
+            color: #dc3545;
+            background-color: #f8d7da;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+
+        .success {
+            color: #155724;
+            background-color: #d4edda;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div id="sidebar-container"></div>
+
+    <div id="main-content">
+        <h1>🤖 AI Flashcard Generator</h1>
+        
+        <div id="message"></div>
+
+        <form id="aiForm">
+            <div>
+                <label for="topic">Topic/Subject:</label>
+                <input type="text" id="topic" placeholder="e.g., JavaScript, Node.js, Postgres, etc." required>
+            </div>
+
+            <div>
+                <label for="count">Number of Flashcards (1-10):</label>
+                <select id="count">
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                    <option value="6">6</option>
+                    <option value="7">7</option>
+                    <option value="8">8</option>
+                    <option value="9">9</option>
+                    <option value="10">10</option>
+                </select>
+            </div>
+
+            <button type="submit" id="generateBtn">Generate Flashcards</button>
+        </form>
+
+        <div id="loading" class="loading" style="display: none;">
+            Generating flashcards... Please wait...
+        </div>
+
+        <div id="flashcardsContainer"></div>
+    </div>
+
+    <script>
+        const role = localStorage.getItem('role');
+        if (role !== 'user') {
+            alert('Unauthorized access. Redirecting to login.');
+            window.location.href = '/';
+        }
+
+        fetch('/sidebar.html')
+            .then(response => response.text())
+            .then(html => {
+                document.getElementById('sidebar-container').innerHTML = html;
+
+                const sidebar = document.getElementById('sidebar-container');
+                sidebar.addEventListener('mouseenter', () => {
+                    sidebar.classList.add('expanded');
+                });
+                sidebar.addEventListener('mouseleave', () => {
+                    sidebar.classList.remove('expanded');
+                });
+
+                document.getElementById('logoutButton').addEventListener('click', () => {
+                    localStorage.clear();
+                    window.location.href = '/';
+                });
+            });
+
+        document.getElementById('aiForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const topic = document.getElementById('topic').value;
+            const count = document.getElementById('count').value;
+            const generateBtn = document.getElementById('generateBtn');
+            const loading = document.getElementById('loading');
+            const flashcardsContainer = document.getElementById('flashcardsContainer');
+            const message = document.getElementById('message');
+
+            flashcardsContainer.innerHTML = '';
+            message.innerHTML = '';
+
+            generateBtn.disabled = true;
+            loading.style.display = 'block';
+
+            try {
+                const response = await fetch('/api/flashcards/ai-generate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ topic, count })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    displayFlashcards(data.flashcards, topic);
+                    showMessage('Flashcards generated successfully!', 'success');
+                } else {
+                    showMessage(data.error || 'Failed to generate flashcards', 'error');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showMessage('An error occurred while generating flashcards', 'error');
+            } finally {
+                generateBtn.disabled = false;
+                loading.style.display = 'none';
+            }
+        });
+
+        function displayFlashcards(flashcards, topic) {
+            const container = document.getElementById('flashcardsContainer');
+            
+            const header = document.createElement('h2');
+            header.textContent = `Generated Flashcards for: ${topic}`;
+            container.appendChild(header);
+
+            flashcards.forEach((flashcard, index) => {
+                const cardDiv = document.createElement('div');
+                cardDiv.className = 'flashcard';
+                cardDiv.innerHTML = `
+                    <h3>${flashcard.front}</h3>
+                    <p><strong>Definition:</strong> ${flashcard.back}</p>
+                    <p><strong>Example:</strong> ${flashcard.example}</p>
+                `;
+                container.appendChild(cardDiv);
+            });
+
+            const saveBtn = document.createElement('button');
+            saveBtn.textContent = 'Save to My Flashcards';
+            saveBtn.onclick = () => saveFlashcards(flashcards, topic);
+            container.appendChild(saveBtn);
+        }
+
+        async function saveFlashcards(flashcards, topic) {
+            const saveBtn = event.target;
+            if (saveBtn.disabled) {
+                return;
+            }
+            
+            saveBtn.disabled = true;
+            saveBtn.textContent = 'Saving...';
+            
+            try {
+                const username = localStorage.getItem('username');
+                
+                const setResponse = await fetch('/api/flashcards/sets', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        title: `AI Generated - ${topic}`,
+                        description: `AI-generated flashcards for ${topic}`,
+                        createdBy: username
+                    })
+                });
+
+                if (!setResponse.ok) {
+                    throw new Error('Failed to create flashcard set');
+                }
+
+                const set = await setResponse.json();
+
+                for (const flashcard of flashcards) {
+                    await fetch('/api/flashcards/cards', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            setId: set._id,
+                            front: flashcard.front,
+                            back: flashcard.back,
+                            example: flashcard.example
+                        })
+                    });
+                }
+
+                showMessage('Flashcards saved successfully! You can view them in your Flashcards section.', 'success');
+                alert('AI Flashcards saved successfully!');
+                
+                // Change button to show it's been saved
+                saveBtn.textContent = 'Saved!';
+                saveBtn.style.backgroundColor = '#4CAF50';
+                saveBtn.style.color = 'white';
+            } catch (error) {
+                console.error('Error saving flashcards:', error);
+                showMessage('Failed to save flashcards', 'error');
+                
+                // Re-enable button on error
+                saveBtn.disabled = false;
+                saveBtn.textContent = 'Save to My Flashcards';
+            }
+        }
+
+        function showMessage(text, type) {
+            const message = document.getElementById('message');
+            message.innerHTML = `<div class="${type}">${text}</div>`;
+        }
+    </script>
+</body>
+</html> 
