@@ -185,9 +185,13 @@ if (sidebar) {
       loading.style.display = 'block';
 
       try {
+        const token = localStorage.getItem('token');
         const res = await fetch('/api/flashcards/ai-generate', {
           method: 'POST',
-          headers: {'Content-Type':'application/json'},
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
           body: JSON.stringify({
             topic: topicInput.value.trim(),
             count: countSelect.value
@@ -232,10 +236,14 @@ if (sidebar) {
       btn.disabled = true;
       btn.textContent = 'Saving...';
       try {
+        const token = localStorage.getItem('token');
         const user = localStorage.getItem('username');
         let r = await fetch('/api/flashcards/sets', {
           method:'POST',
-          headers:{'Content-Type':'application/json'},
+          headers:{
+            'Content-Type':'application/json',
+            'Authorization': `Bearer ${token}`
+          },
           body: JSON.stringify({
             title: `AI Generated - ${topic}`,
             description: `AI-generated flashcards for ${topic}`,
@@ -247,7 +255,10 @@ if (sidebar) {
         for (let f of flashcards) {
           await fetch('/api/flashcards/cards', {
             method:'POST',
-            headers:{'Content-Type':'application/json'},
+            headers:{
+              'Content-Type':'application/json',
+              'Authorization': `Bearer ${token}`
+            },
             body: JSON.stringify({
               setId: set._id,
               front: f.front,

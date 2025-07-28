@@ -48,7 +48,7 @@
 
   <script>
     const params = new URLSearchParams(window.location.search);
-    const quizId = params.get('id');
+    const quizId = params.get('quizId') || params.get('id');
 
     const titleEl = document.getElementById('quizTitle');
     const descEl = document.getElementById('quizDesc');
@@ -68,7 +68,13 @@
 
 
       try {
-        const res = await fetch(`/api/quizzes/${quizId}`);
+        const token = localStorage.getItem('token');
+        const res = await fetch(`/api/quizzes/${quizId}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
         if (!res.ok) throw new Error("Failed to load quiz");
 
         quizData = await res.json();
@@ -116,11 +122,13 @@
       }
 
       try {
+        const token = localStorage.getItem('token');
         const res = await fetch(`/api/quizzes/${quizId}/submit`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json',
-                      'Authorization': `Bearer ${token}`
-           },
+          headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
           body: JSON.stringify({ answers })
         });
 

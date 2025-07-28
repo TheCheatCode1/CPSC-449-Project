@@ -184,6 +184,11 @@
 
             if (res.ok) {
                 alert('Registration successful! Please login.');
+                const loginC = document.getElementById('loginContainer');
+                const registerC = document.getElementById('registerContainer');
+                registerC.classList.replace('visible','hidden');
+                loginC.classList.replace('hidden','visible');
+                document.getElementById('loginUsername').value = username;
             } else {
                 const error = await res.json();
                 alert('Registration failed: ' + error.message);
@@ -202,7 +207,7 @@
         });
 
         const data = await res.json();
-        if (res.ok) {
+        if (res.ok && data && data.token && data.role) {
             localStorage.setItem('token', data.token);
             localStorage.setItem('role', data.role);
             localStorage.setItem('username', username);
