@@ -85,4 +85,19 @@ router.get('/admin/all-quizzes', auth, roleAuth('admin'), async (req, res) => {
   }
 });
 
+router.delete('/admin/quizzes/:id', auth, roleAuth('admin'), async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    const quiz = await Quiz.findByIdAndDelete(id);
+    if (!quiz) {
+      return res.status(404).json({ error: 'Quiz not found' });
+    }
+
+    res.json({ message: 'Quiz deleted successfully' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 module.exports = router;

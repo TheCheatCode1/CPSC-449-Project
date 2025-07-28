@@ -252,10 +252,6 @@
         <div class="sidebar-item" onclick="showSection('quizzes')">
             <span class="sidebar-icon">📝</span><span class="label">All Quizzes</span>
         </div>
-        <hr style="width: 80%; border-color: #444;">
-        <div class="sidebar-item" onclick="window.location.href='/user.html'">
-            <span class="sidebar-icon">👤</span><span class="label">User View</span>
-        </div>
         <div class="sidebar-item" id="logoutButton">
             <span class="sidebar-icon">🚪</span><span class="label">Logout</span>
         </div>
@@ -505,10 +501,27 @@
             // TODO: Implement user details view
         }
 
-        function deleteUser(userId) {
+        async function deleteUser(userId) {
             if (confirm('Are you sure you want to delete this user?')) {
-                // TODO: Implement user deletion
-                alert('User deletion not implemented yet');
+                try {
+                    const response = await fetch(`/api/auth/users/${userId}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                            'Content-Type': 'application/json'
+                        }
+                    });
+
+                    if (response.ok) {
+                        alert('User deleted successfully');
+                        loadUsers(); // Refresh the list
+                    } else {
+                        const error = await response.json();
+                        alert('Error deleting user: ' + error.message);
+                    }
+                } catch (error) {
+                    alert('Error deleting user: ' + error.message);
+                }
             }
         }
 
@@ -516,10 +529,27 @@
             window.location.href = `/viewSet.html?id=${setId}`;
         }
 
-        function deleteSet(setId) {
-            if (confirm('Are you sure you want to delete this set?')) {
-                // TODO: Implement set deletion
-                alert('Set deletion not implemented yet');
+        async function deleteSet(setId) {
+            if (confirm('Are you sure you want to delete this set? This will also delete all cards in the set.')) {
+                try {
+                    const response = await fetch(`/api/flashcards/admin/sets/${setId}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                            'Content-Type': 'application/json'
+                        }
+                    });
+
+                    if (response.ok) {
+                        alert('Set deleted successfully');
+                        loadSets();
+                    } else {
+                        const error = await response.json();
+                        alert('Error deleting set: ' + error.error);
+                    }
+                } catch (error) {
+                    alert('Error deleting set: ' + error.message);
+                }
             }
         }
 
@@ -527,10 +557,27 @@
             window.location.href = `/takeQuiz.html?id=${quizId}`;
         }
 
-        function deleteQuiz(quizId) {
+        async function deleteQuiz(quizId) {
             if (confirm('Are you sure you want to delete this quiz?')) {
-                // TODO: Implement quiz deletion
-                alert('Quiz deletion not implemented yet');
+                try {
+                    const response = await fetch(`/api/quizzes/admin/quizzes/${quizId}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                            'Content-Type': 'application/json'
+                        }
+                    });
+
+                    if (response.ok) {
+                        alert('Quiz deleted successfully');
+                        loadQuizzes();
+                    } else {
+                        const error = await response.json();
+                        alert('Error deleting quiz: ' + error.error);
+                    }
+                } catch (error) {
+                    alert('Error deleting quiz: ' + error.message);
+                }
             }
         }
 
@@ -587,6 +634,12 @@
         document.addEventListener('DOMContentLoaded', function() {
             loadUsers();
             updateStats();
+            
+            // Handle hash navigation from other pages
+            const hash = window.location.hash.substring(1);
+            if (hash && ['users', 'sets', 'quizzes'].includes(hash)) {
+                showSection(hash);
+            }
         });
     </script>
 </body>

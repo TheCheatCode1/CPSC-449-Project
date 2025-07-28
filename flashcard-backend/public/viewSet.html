@@ -265,7 +265,11 @@
 </script>
 
 <script>
-  fetch('/sidebar.html')
+  // Check if user is admin and load appropriate sidebar
+  const role = localStorage.getItem('role');
+  const sidebarPath = role === 'admin' ? '/adminSidebar.html' : '/sidebar.html';
+  
+  fetch(sidebarPath)
     .then(response => response.text())
     .then(html => {
       document.getElementById('sidebar-container').innerHTML = html;

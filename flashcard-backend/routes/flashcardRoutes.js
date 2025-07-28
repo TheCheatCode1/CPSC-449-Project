@@ -33,6 +33,23 @@ router.get('/admin/all-sets', auth, roleAuth('admin'), async (req, res) => {
   }
 });
 
+router.delete('/admin/sets/:id', auth, roleAuth('admin'), async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    const set = await Set.findByIdAndDelete(id);
+    if (!set) {
+      return res.status(404).json({ error: 'Set not found' });
+    }
+
+    await Card.deleteMany({ setId: id });
+
+    res.json({ message: 'Set and all its cards deleted successfully' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 router.get('/sets/:id', auth, async (req, res) => {
   try {
     const { id } = req.params;

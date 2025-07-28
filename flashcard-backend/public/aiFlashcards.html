@@ -149,7 +149,9 @@ input, select {
     }
 
     // load sidebar
-    fetch('/sidebar.html')
+    const sidebarPath = role === 'admin' ? '/adminSidebar.html' : '/sidebar.html';
+    
+    fetch(sidebarPath)
       .then(r => r.text())
       .then(html => {
         const sb = document.getElementById('sidebar-container');

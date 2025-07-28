@@ -323,7 +323,9 @@
     </script>
 <script>
   // 1) Sidebar load & auth‑guard (unchanged)
-  fetch('/sidebar.html')
+  const sidebarPath = role === 'admin' ? '/adminSidebar.html' : '/sidebar.html';
+  
+  fetch(sidebarPath)
     .then(r=>r.text())
     .then(html=>{
       document.getElementById('sidebar-container').innerHTML = html;
