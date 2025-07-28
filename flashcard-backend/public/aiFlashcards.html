@@ -5,56 +5,110 @@
     <meta charset="UTF-8">
     <title>AI Flashcards</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0; padding: 0;
-            display: flex;
-            background-color: #B69DDD;
-        }
-        /* Sidebar */
-        #sidebar-container {
-            height: 100vh; width: 60px;
-            background-color: #111; color: white;
-            overflow-x: hidden; transition: width 0.3s;
-            display: flex; flex-direction: column;
-            padding-top: 20px; position: relative;
-        }
-        #sidebar-container.expanded { width: 200px; }
-        .sidebar-item {
-            display: flex; align-items: center;
-            width: 100%; padding: 10px;
-            cursor: pointer; color: #818181;
-            transition: background-color 0.3s, color 0.3s;
-        }
-        .sidebar-item:hover { background-color: #333; color: white; }
-        .sidebar-icon { font-size: 20px; width: 30px; text-align: center; }
-        .label {
-            opacity: 0; white-space: nowrap; overflow: hidden;
-            transition: opacity 0.3s ease, margin-left 0.3s ease;
-            margin-left: 0;
-        }
-        #sidebar-container.expanded .label {
-            opacity: 1; margin-left: 10px;
-        }
-        #sidebar-container:not(.expanded) .label { display: none; }
+body {
+  font-family: Arial, sans-serif;
+  margin: 0; padding: 0;
+  display: flex;
+  background-color: #B69DDD;
+}
 
-        /* Main content */
-        #main-content {
-            flex: 1; padding: 20px;
-            display: flex; flex-direction: column;
-            align-items: center; text-align: center;
-        }
-        input, select {
-            margin: 5px 0; width: 750px;
-            padding: 5px; font-size: 1rem;
-        }
-        .flashcard {
-            border: 1px solid #ccc; padding: 10px;
-            margin: 10px 0; width: 800px; text-align: left;
-        }
-        #loading, #message {
-            width: 750px; margin-top: 1rem;
-        }
+/* Sidebar */
+#sidebar-container {
+  height: 100vh;
+}
+
+#sidebar {
+  height: 100%;
+  width: 60px;
+  background-color: #111;
+  color: white;
+  overflow-x: hidden;
+  transition: width 0.3s;
+  display: flex;
+  flex-direction: column;
+  padding-top: 20px;
+  position: relative;
+}
+
+#sidebar.expanded {
+  width: 200px;
+}
+
+.sidebar-item {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: 10px;
+  cursor: pointer;
+  color: #818181;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+.sidebar-item:hover {
+  background-color: #333;
+  color: white;
+}
+
+.sidebar-icon {
+  font-size: 20px;
+  width: 30px;
+  text-align: center;
+}
+
+.label {
+  opacity: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  transition: opacity 0.3s ease, margin-left 0.3s ease;
+  margin-left: 0;
+}
+
+#sidebar.expanded .label {
+  opacity: 1;
+  margin-left: 10px;
+}
+
+#sidebar:not(.expanded) .label {
+  display: none;
+}
+
+#logoutButton {
+  margin-top: auto;
+  margin-bottom: 30px;
+}
+
+/* Main content */
+#main-content {
+  flex: 1;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+input, select {
+  margin: 5px 0;
+  width: 750px;
+  padding: 5px;
+  font-size: 1rem;
+}
+
+.flashcard {
+  border: 1px solid #ccc;
+  padding: 10px;
+  margin: 10px 0;
+  width: 800px;
+  text-align: left;
+}
+
+#loading, #message {
+  width: 750px;
+  margin-top: 1rem;
+}
+
+
+
     </style>
 </head>
 <body>
@@ -100,8 +154,12 @@
       .then(html => {
         const sb = document.getElementById('sidebar-container');
         sb.innerHTML = html;
-        sb.addEventListener('mouseenter', ()=> sb.classList.add('expanded'));
-        sb.addEventListener('mouseleave', ()=> sb.classList.remove('expanded'));
+const sidebar = document.getElementById('sidebar');
+if (sidebar) {
+  sidebar.addEventListener('mouseenter', () => sidebar.classList.add('expanded'));
+  sidebar.addEventListener('mouseleave', () => sidebar.classList.remove('expanded'));
+}
+
         document.getElementById('logoutButton')
                 .addEventListener('click', ()=> {
           localStorage.clear();

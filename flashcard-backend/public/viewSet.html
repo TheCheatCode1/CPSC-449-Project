@@ -234,7 +234,29 @@
         });
       }
     });
+
+  // Move this logic inside a function to ensure it only runs when setId is valid
+  function saveViewedSet(id) {
+    if (!id) return;
+    const viewed = JSON.parse(localStorage.getItem('recentViewedSets') || '[]');
+
+    // Move to front, no duplicates
+    const index = viewed.indexOf(id);
+    if (index !== -1) viewed.splice(index, 1);
+    viewed.unshift(id);
+
+    // Limit to 5
+    while (viewed.length > 5) viewed.pop();
+
+    localStorage.setItem('recentViewedSets', JSON.stringify(viewed));
+  }
+
+  // Wait until setId is confirmed and valid
+  if (setId) {
+    saveViewedSet(setId);
+  }
 </script>
+
 
 </body>
 </html>

@@ -206,21 +206,7 @@
 </div>
 
 
-      <!-- 3. Today's Stats -->
-      <div id="today-stats" class="dashboard-section stats-grid">
-        <div class="stat-card">
-          <h3>Cards Reviewed</h3>
-          <p id="stat-reviewed">0</p>
-        </div>
-        <div class="stat-card">
-          <h3>Total Sets</h3>
-          <p id="stat-sets">0</p>
-        </div>
-        <div class="stat-card">
-          <h3>Streak</h3>
-          <p id="stat-streak">0 days</p>
-        </div>
-      </div>
+
 
 
       <!-- 5. Recent Sets -->
@@ -244,7 +230,7 @@
     <!-- CTA to build a new quiz -->
     <div class="action-card">
       <h3>Create Your Own Quiz</h3>
-      <button onclick="location.href='/takeQuiz.html'">
+      <button onclick="location.href='/createQuiz.html'">
         New Quiz
       </button>
     </div>
@@ -262,10 +248,6 @@
         <div class="tip-card">
           <h3>💡 Tip of the Day</h3>
           <p id="daily-tip"></p>
-        </div>
-        <div class="badge-card">
-          <h3>🏅 Your Badges</h3> //NOT IMPLEMENTED YET
-          <p id="badge-list">None yet</p>
         </div>
       </div>
     </div>
@@ -367,12 +349,6 @@
         });
     });
 
-  // 2) Stats & tip
-  const reviewedToday = +(localStorage.getItem('reviewedToday')||0);
-  const streakDays    = +(localStorage.getItem('streakDays')||0);
-  document.getElementById('stat-reviewed').textContent = reviewedToday;
-  document.getElementById('stat-streak').textContent    = `${streakDays} days`;
-
   const tips = [
     'Your draft is auto‑saved as you type.',
     'Cards auto‑resize to fit your definitions.',
@@ -383,65 +359,82 @@
   document.getElementById('daily-tip').textContent =
     tips[Math.floor(Math.random()*tips.length)];
 
-  // 3) Load your real sets
-  async function loadDashboard() {
-    try {
-      const res = await fetch('/api/flashcards/sets');
-      const sets = await res.json();
 
-      // total sets
-      document.getElementById('stat-sets').textContent = sets.length;
-
-      // recent 5 sets
-      const recent = document.getElementById('recentSetsList');
-      recent.innerHTML = '';
-      sets.slice(-5).reverse().forEach(s => {
-        const d = document.createElement('div');
-        d.className = 'set-card';
-        d.innerHTML = `
-          <h4>${s.title}</h4>
-          ${s.description ? `<small>${s.description}</small>` : ''}
-        `;
-        d.onclick = ()=> location.href = `/viewSet.html?id=${s._id}`;
-        recent.append(d);
-      });
-    } catch(e){
-      console.error('Dashboard load failed',e);
-    }
-  }
-  loadDashboard();
-  async function loadDashboard() {
-  // … your existing sets‑loading code …
-
-  // now fetch the user's quizzes
+async function loadDashboard() {
+  // Load recent viewed sets
   try {
-    const quizRes = await fetch('/api/quizzes');      // your quizzes endpoint
+    const res = await fetch('/api/flashcards/sets');
+    const sets = await res.json();
+
+    // total sets
+    const statSets = document.getElementById('stat-sets');
+    if (statSets) statSets.textContent = sets.length;
+
+    const recent = document.getElementById('recentSetsList');
+    if (recent) {
+      recent.innerHTML = '';
+      const viewedIds = JSON.parse(localStorage.getItem('recentViewedSets') || '[]');
+      if (viewedIds.length === 0) {
+        recent.innerHTML = `<p style="color:#444;">You haven’t viewed any sets yet.</p>`;
+      } else {
+        for (const id of viewedIds) {
+          try {
+            const res = await fetch(`/api/flashcards/sets/${id}`);
+            const s = await res.json();
+            const d = document.createElement('div');
+            d.className = 'set-card';
+            d.innerHTML = `<h4>${s.title}</h4>
+                           ${s.description ? `<small>${s.description}</small>` : ''}`;
+            d.onclick = () => location.href = `/viewSet.html?id=${s._id}`;
+            recent.append(d);
+          } catch (e) {
+            console.warn('Failed to load set:', id, e);
+          }
+        }
+      }
+    }
+  } catch (e) {
+    console.error('Dashboard load failed', e);
+  }
+
+  // Load quizzes
+  try {
+    const quizRes = await fetch('/api/quizzes');
     const quizzes = await quizRes.json();
-
     const recentQ = document.getElementById('recentQuizzesList');
-    recentQ.innerHTML = '';
-
-    quizzes
-      .slice(-5)      // take last 5
-      .reverse()
-      .forEach(q => {
-        const card = document.createElement('div');
-        card.className = 'set-card';
-        card.innerHTML = `
-          <h4>${q.title}</h4>
-          ${q.description ? `<small>${q.description}</small>` : ''}
-        `;
-        card.onclick = () =>
-          location.href = `/takeQuiz.html?quizId=${q._id}`;
-        recentQ.append(card);
-      });
+    if (recentQ) {
+      recentQ.innerHTML = '';
+      quizzes
+        .slice(-5)
+        .reverse()
+        .forEach(q => {
+          const card = document.createElement('div');
+          card.className = 'set-card';
+          card.innerHTML = `<h4>${q.title}</h4>
+                            ${q.description ? `<small>${q.description}</small>` : ''}`;
+          card.onclick = () =>
+            location.href = `/takeQuiz.html?quizId=${q._id}`;
+          recentQ.append(card);
+        });
+    }
   } catch (err) {
     console.warn('Could not load quizzes:', err);
   }
-}
 
-// after defining loadDashboard():
-loadDashboard();
+  // Tip of the day
+  const tips = [
+    'Your draft is auto‑saved as you type.',
+    'Cards auto‑resize to fit your definitions.',
+    'Hit “Auto Fill” to fetch definitions instantly.',
+    'Reorder cards by dragging the ☰ handle.',
+    'Use the search bar to quickly find sets.'
+  ];
+  const dailyTip = document.getElementById('daily-tip');
+  if (dailyTip) {
+    dailyTip.textContent =
+      tips[Math.floor(Math.random() * tips.length)];
+  }
+}
 
 
 // simple debounce helper
@@ -497,6 +490,7 @@ document.addEventListener('click', e => {
   }
 });
 
+loadDashboard();
 
 </script>
 </body>
