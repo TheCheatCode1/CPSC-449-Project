@@ -9,7 +9,7 @@ router.post('/', auth, async (req, res) => {
   try {
     const quiz = new Quiz({
       ...req.body,
-      createdBy: req.user._id
+      userId: req.user._id
     });
     await quiz.save();
     res.status(201).json(quiz);

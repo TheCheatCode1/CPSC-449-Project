@@ -6,6 +6,7 @@ const questionSchema = new mongoose.Schema({
   correctAnswer: String
 });
 
+
 const quizSchema = new mongoose.Schema({
   title: String,
   description: String,
@@ -14,7 +15,13 @@ const quizSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
     required: true
-    },
+  },
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
+  }
 });
+
 
 module.exports = mongoose.model('Quiz', quizSchema);

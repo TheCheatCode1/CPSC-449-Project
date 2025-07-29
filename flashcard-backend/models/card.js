@@ -1,13 +1,12 @@
 const mongoose = require('mongoose');
+
 const cardSchema = new mongoose.Schema({
-  setId: { type: mongoose.Schema.Types.ObjectId, ref: 'Set' },
-  front: String,
-  back: String,
-  example: String,
-  createdBy: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: true
-  }
+  term: { type: String, required: true },
+  definition: { type: String, required: true },
+  setId: { type: mongoose.Schema.Types.ObjectId, ref: 'Set', required: true },
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  createdAt: { type: Date, default: Date.now }
 });
-module.exports = mongoose.model('Card', cardSchema);
+
+// ✅ Safe export
+module.exports = mongoose.models.Card || mongoose.model('Card', cardSchema);
