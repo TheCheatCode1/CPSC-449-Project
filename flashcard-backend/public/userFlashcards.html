@@ -2,88 +2,88 @@
 
 
 <html lang="en">
-<head>
+    <head>
   <link rel="icon" href="/images/quickflashfav.png" type="image/png">
     <meta charset="UTF-8">
-    <title>User Flashcards</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            display: flex;
+        <title>User Flashcards</title>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                margin: 0;
+                padding: 0;
+                display: flex;
             background-color: #B69DDD;
-        }
+            }
 
-        #sidebar {
-    height: 100vh;
-    width: 60px;
-    background-color: #111;
-    overflow-x: hidden;
-    transition: width 0.3s;
-    color: white;
-    display: flex;
-    flex-direction: column;
-    padding-top: 20px;
-    position: relative;
-    }
+            #sidebar {
+                height: 100vh;
+                width: 60px;
+                background-color: #111;
+                overflow-x: hidden;
+                transition: width 0.3s;
+                color: white;
+                display: flex;
+                flex-direction: column;
+                padding-top: 20px;
+                position: relative;
+            }
 
-    #sidebar.expanded {
-        width: 200px;
-    }
+            #sidebar.expanded {
+                width: 200px;
+            }
 
-    .sidebar-item {
-        display: flex;
-        align-items: center;
-        width: 100%;
-        padding: 10px;
-        cursor: pointer;
-        color: #818181;
-        transition: background-color 0.3s, color 0.3s;
-    }
+            .sidebar-item {
+                display: flex;
+                align-items: center;
+                width: 100%;
+                padding: 10px;
+                cursor: pointer;
+                color: #818181;
+                transition: background-color 0.3s, color 0.3s;
+            }
 
-    .sidebar-item:hover {
-        background-color: #333;
-        color: white;
-    }
+            .sidebar-item:hover {
+                background-color: #333;
+                color: white;
+            }
 
-    .sidebar-icon {
-        font-size: 20px;
-        width: 30px;
-        text-align: center;
-    }
+            .sidebar-icon {
+                font-size: 20px;
+                width: 30px;
+                text-align: center;
+            }
 
-    .label {
-        opacity: 0;
-        white-space: nowrap;
-        overflow: hidden;
-        transition: opacity 0.3s ease, margin-left 0.3s ease;
-        margin-left: 0;
-    }
+            .label {
+                opacity: 0;
+                white-space: nowrap;
+                overflow: hidden;
+                transition: opacity 0.3s ease, margin-left 0.3s ease;
+                margin-left: 0;
+            }
 
-    #sidebar.expanded .label {
-        opacity: 1;
-        margin-left: 10px;
-    }
+            #sidebar.expanded .label {
+                opacity: 1;
+                margin-left: 10px;
+            }
 
-    #sidebar:not(.expanded) .label {
-        display: none;
-    }
+            #sidebar:not(.expanded) .label {
+                display: none;
+            }
 
-    #logoutButton {
-        margin-top: auto;
-        margin-bottom: 30px;
-    }
+            #logoutButton {
+                margin-top: auto;
+                margin-bottom: 30px;
+            }
 
 
-#main-content {
-  flex: 1;
-  padding: 20px;
+            #main-content {
+                flex: 1;
+                padding: 20px;
   display: flex;                /* side-by-side columns */
   justify-content: center;      /* center them in the page */
   align-items: flex-start;      /* align tops */
   gap: 2rem;                    /* space between columns */
-}
+            }
 
 
             input, textarea {
@@ -96,19 +96,19 @@
             }
 
             .card-row {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 8px;
+                display: flex;
+                gap: 10px;
+                margin-bottom: 8px;
             }
 
             .card-row textarea {
             width: 350px;       /* fixed starting width */
             height: 50px;       /* fixed starting height */
-            padding: 10px;
-            font-size: 1rem;
+                padding: 10px;
+                font-size: 1rem;
             overflow: hidden;   /* no scrollbars */
             resize: none;       /* no manual grab‑resize */
-            box-sizing: border-box;
+                box-sizing: border-box;
             }
 
             .flashcard, .set-card {
@@ -125,8 +125,8 @@
             }
 
             #flashcard-container {
-            margin-top: 40px;
-            text-align: center;
+                margin-top: 40px;
+                text-align: center;
             }
 
             #flashcard {
@@ -156,10 +156,10 @@
                 font-weight: bold;
             }
             #flashcardContainer {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            margin-top: 20px;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                margin-top: 20px;
             }
 
             #flashcard {
@@ -207,86 +207,86 @@
 
             .card-row input {
             width: calc(50% - 5px);  /* (700px - 10px gap) ÷ 2 = 345px each */
-            padding: 10px;
-            font-size: 1rem;
+                padding: 10px;
+                font-size: 1rem;
             }
 
             .card-editor {
-            position: relative;
-            border: 1px solid #ccc;
-            border-radius: 6px;
+                position: relative;
+                border: 1px solid #ccc;
+                border-radius: 6px;
             padding: 40px 12px 12px;   /* extra 20px on top */
-            margin-bottom: 20px;
-            background: #fafafa;
+                margin-bottom: 20px;
+                background: #fafafa;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
             }
 
             /* 2. Trash‑can button in the corner */
             .trash-btn {
-            position: absolute;
-            top: 8px;
-            right: 8px;
-            background: none;
-            border: none;
-            font-size: 16px;
-            cursor: pointer;
+                position: absolute;
+                top: 8px;
+                right: 8px;
+                background: none;
+                border: none;
+                font-size: 16px;
+                cursor: pointer;
             }
 
             .drag-handle {
-            position: absolute;
-            top: 14px;
-            right: 50px;
-            cursor: grab;
-            font-size: 18px;
-            user-select: none;
+                position: absolute;
+                top: 14px;
+                right: 50px;
+                cursor: grab;
+                font-size: 18px;
+                user-select: none;
             }
 
             .drag-handle:active {
-            cursor: grabbing;
+                cursor: grabbing;
             }
 
             /* 3. Disabled state when ≤2 cards */
             .trash-btn.disabled {
-            opacity: 0.7;
-            pointer-events: none;
+                opacity: 0.7;
+                pointer-events: none;
             }
 
             .card-number {
-            position: absolute;
-            top: 8px;
-            left: 8px;
+                position: absolute;
+                top: 8px;
+                left: 8px;
             background: transparent;   /* no colored box */
             color: #333;               /* pick a text color you like */
-            font-size: 0.9rem;
+                font-size: 0.9rem;
             padding: 0;                /* remove the padding */
             border-radius: 0;          /* no rounding */
-            user-select: none;
-            margin: 2px 0 0 2px;
+                user-select: none;
+                margin: 2px 0 0 2px;
             }
 
             .column {
   flex: 1;          /* each column shares available width */
   min-width: 0;     /* prevent content from forcing overflow */
-}
+            }
 
-.column-left {
+            .column-left {
   max-width: 900px; /* form side slightly narrower */
-}
+            }
 
-.column-right {
+            .column-right {
   max-width: 350px;      /* your existing rule */
-  /* remove any height limit: */
-  max-height: none;
-  /* ensure overflow shows all items: */
-  overflow: visible;
-}
+                /* remove any height limit: */
+                max-height: none;
+                /* ensure overflow shows all items: */
+                overflow: visible;
+            }
 
-#savedSets {
-  /* no scrollbars: */
-  overflow: visible !important;
-  /* let it grow naturally: */
-  max-height: none !important;
-}
+            #savedSets {
+                /* no scrollbars: */
+                overflow: visible !important;
+                /* let it grow naturally: */
+                max-height: none !important;
+            }
 
 
             
@@ -297,279 +297,313 @@
     </head>
     <body>
 
-    <div id="sidebar-container"></div>
+        <div id="sidebar-container"></div>
 
-<div id="main-content">
+        <div id="main-content">
 
-  <!-- LEFT COLUMN: creation form -->
-  <div class="column column-left">
-    <h1>Create a new flashcard set</h1>
-    <input id="setTitle" type="text" placeholder="Title" />
-    <textarea id="setDescription" rows="3" placeholder="Description"></textarea>
+            <!-- LEFT COLUMN: creation form -->
+            <div class="column column-left">
+                <h1>Create a new flashcard set</h1>
+                <input id="setTitle" type="text" placeholder="Title" />
+                <textarea id="setDescription" rows="3" placeholder="Description"></textarea>
 
-    <div id="cardsContainer"></div>
-    <button onclick="addCard()">Add a card</button>
-    <button onclick="saveSet()">Save Set</button>
-  </div>
+                <div id="cardsContainer"></div>
+                <button onclick="addCard()">Add a card</button>
+                <button onclick="saveSet()">Save Set</button>
+            </div>
 
-  <!-- RIGHT COLUMN: saved sets list -->
-  <div class="column column-right">
-    <h3>Saved Flashcard Sets</h3>
-    <div id="savedSets"></div>
-  </div>
+            <!-- RIGHT COLUMN: saved sets list -->
+            <div class="column column-right">
+                <h3>Saved Flashcard Sets</h3>
+                <div id="savedSets"></div>
+            </div>
 
-</div>
+        </div>
 
 
-    <script>
+        <script>
+            // Authentication check
+            const token = localStorage.getItem('token');
+            const role = localStorage.getItem('role');
+            if (!token || role !== 'user') {
+                alert('Please log in to access this page.');
+                window.location.href = '/';
+            }
         
-    function loadDraft() {
-    const draft = JSON.parse(localStorage.getItem('flashcardDraft') || 'null');
-    if (!draft) return;
+            function loadDraft() {
+                const draft = JSON.parse(localStorage.getItem('flashcardDraft') || 'null');
+                if (!draft) return;
 
     document.getElementById('setTitle').value       = draft.title || '';
-    document.getElementById('setDescription').value = draft.description || '';
+                document.getElementById('setDescription').value = draft.description || '';
 
-    const container = document.getElementById('cardsContainer');
-    container.innerHTML = '';
+                const container = document.getElementById('cardsContainer');
+                container.innerHTML = '';
     draft.cards.forEach(c => addCard(c.front, c.back));
 
-    // <- new code here
+                // <- new code here
     document
         .querySelectorAll('.card-row textarea')
         .forEach(el => {
-        el.style.height = 'auto';
-        el.style.height = el.scrollHeight + 'px';
-        });
-    }
+                    el.style.height = 'auto';
+                    el.style.height = el.scrollHeight + 'px';
+                });
+            }
 
 
 
 
-        fetch('/sidebar.html')
+            // Check if user is admin and load appropriate sidebar
+            const sidebarPath = role === 'admin' ? '/adminSidebar.html' : '/sidebar.html';
+            
+            fetch(sidebarPath)
             .then(response => response.text())
             .then(html => {
-                document.getElementById('sidebar-container').innerHTML = html;
+                    document.getElementById('sidebar-container').innerHTML = html;
 
-                const sidebar = document.getElementById('sidebar');
-                if (sidebar) {
-                    sidebar.addEventListener('mouseenter', () => sidebar.classList.add('expanded'));
-                    sidebar.addEventListener('mouseleave', () => sidebar.classList.remove('expanded'));
-                }
+                    const sidebar = document.getElementById('sidebar');
+                    if (sidebar) {
+                        sidebar.addEventListener('mouseenter', () => sidebar.classList.add('expanded'));
+                        sidebar.addEventListener('mouseleave', () => sidebar.classList.remove('expanded'));
+                    }
 
-                const logoutButton = document.getElementById('logoutButton');
-                if (logoutButton) {
-                    logoutButton.addEventListener('click', () => {
-                        localStorage.clear();
-                        window.location.href = '/';
-                    });
-                }
-            });
+                    const logoutButton = document.getElementById('logoutButton');
+                    if (logoutButton) {
+                        logoutButton.addEventListener('click', () => {
+                            localStorage.clear();
+                            window.location.href = '/';
+                        });
+                    }
+                });
 
 
 
-       function addCard(front = '', back = '') {
-  // 1) Create card wrapper
-  const wrapper = document.createElement('div');
-  wrapper.className = 'card-editor';
+            function addCard(front = '', back = '') {
+                // 1) Create card wrapper
+                const wrapper = document.createElement('div');
+                wrapper.className = 'card-editor';
 
-  // 2) Number badge
-  const badge = document.createElement('div');
-  badge.className = 'card-number';
-  wrapper.appendChild(badge);
+                // 2) Number badge
+                const badge = document.createElement('div');
+                badge.className = 'card-number';
+                wrapper.appendChild(badge);
 
-  // 3) Drag handle
-  const dragHandle = document.createElement('span');
-  dragHandle.className = 'drag-handle';
-  dragHandle.innerText = '≡';
-  wrapper.appendChild(dragHandle);
+                // 3) Drag handle
+                const dragHandle = document.createElement('span');
+                dragHandle.className = 'drag-handle';
+                dragHandle.innerText = '≡';
+                wrapper.appendChild(dragHandle);
 
-  // 4) Trash button
-  const trash = document.createElement('button');
-  trash.className = 'trash-btn';
-  trash.innerText = '🗑️';
-  trash.onclick = () => {
-    wrapper.remove();
-    updateCardNumbers();
-    updateTrashButtons();
-    saveDraft();
-  };
-  wrapper.appendChild(trash);
+                // 4) Trash button
+                const trash = document.createElement('button');
+                trash.className = 'trash-btn';
+                trash.innerText = '🗑️';
+                trash.onclick = () => {
+                    wrapper.remove();
+                    updateCardNumbers();
+                    updateTrashButtons();
+                    saveDraft();
+                };
+                wrapper.appendChild(trash);
 
-  // 5) Row container for inputs
-  const row = document.createElement('div');
-  row.className = 'card-row';
-  
-function makeAutoResize(el) {
-  el.addEventListener('input', () => {
+                // 5) Row container for inputs
+                const row = document.createElement('div');
+                row.className = 'card-row';
+
+                function makeAutoResize(el) {
+                    el.addEventListener('input', () => {
     el.style.height = 'auto';                    // clear previous inline height
     el.style.height = el.scrollHeight + 'px';    // grow/shrink to fit
-  });
-}
+                    });
+                }
 
 
 
-  // TERM textarea
-const termInput = document.createElement('textarea');
+                // TERM textarea
+                const termInput = document.createElement('textarea');
 termInput.className     = 'front';
 termInput.placeholder   = 'Enter term';
 termInput.value         = front;
-termInput.style.overflow = 'hidden';
+                termInput.style.overflow = 'hidden';
 termInput.style.resize   = 'none';
-makeAutoResize(termInput);
-termInput.addEventListener('input', saveDraft);
+                makeAutoResize(termInput);
+                termInput.addEventListener('input', saveDraft);
 
-// DEF textarea
-const defInput = document.createElement('textarea');
+                // DEF textarea
+                const defInput = document.createElement('textarea');
 defInput.className     = 'back';
 defInput.placeholder   = 'Enter definition';
 defInput.value         = back;
-defInput.style.overflow = 'hidden';
+                defInput.style.overflow = 'hidden';
 defInput.style.resize   = 'none';
-makeAutoResize(defInput);
-defInput.addEventListener('input', saveDraft);
+                makeAutoResize(defInput);
+                defInput.addEventListener('input', saveDraft);
 
 
-  // 8) Append inputs to row
-  row.append(termInput, defInput);
-  wrapper.appendChild(row);
+                // 8) Append inputs to row
+                row.append(termInput, defInput);
+                wrapper.appendChild(row);
 
-  // 9) Auto‑Fill button
-  const autoFillBtn = document.createElement('button');
-  autoFillBtn.textContent = 'Auto Fill';
+                // 9) Auto‑Fill button
+                const autoFillBtn = document.createElement('button');
+                autoFillBtn.textContent = 'Auto Fill';
 
-autoFillBtn.onclick = async () => {
-  const word = termInput.value.trim();
-  if (!word || word.includes(' ')) {
-    alert('Auto‑fill only works with a single word.');
-    return;
-  }
+                autoFillBtn.onclick = async () => {
+                    const word = termInput.value.trim();
+                    if (!word || word.includes(' ')) {
+                        alert('Auto‑fill only works with a single word.');
+                        return;
+                    }
 
-  let data;
-  try {
-    const res = await fetch(`/api/flashcards/lookup/${word}`);
-    if (!res.ok) {
-      // server responded with error status
-      const err = await res.json().catch(() => ({}));
-      alert(err.message || 'Definition not found.');
-      return;
-    }
-    data = await res.json();
-  } catch (err) {
-    console.error(err);
-    alert('Auto‑fill failed. Check your connection.');
-    return;
-  }
+                    let data;
+                    try {
+                        const token = localStorage.getItem('token');
+                        console.log('Token for lookup:', token ? 'Present' : 'Missing');
+                        if (!token) {
+                            alert('Please log in to use auto-fill feature.');
+                            return;
+                        }
+                        const res = await fetch(`/api/flashcards/lookup/${word}`, {
+                            headers: {
+                                'Authorization': `Bearer ${token}`,
+                                'Content-Type': 'application/json'
+                            }
+                        });
+                        if (!res.ok) {
+                            // server responded with error status
+                            const err = await res.json().catch(() => ({}));
+                            alert(`Definition not found for "${word}". Try a different word or enter the definition manually.`);
+                            return;
+                        }
+                        data = await res.json();
+                    } catch (err) {
+                        console.error(err);
+                        alert('Auto‑fill failed. Check your connection.');
+                        return;
+                    }
 
-  defInput.value = `${data.definition} (${data.partOfSpeech})`;
-  // 👇 fire the resize you already wired up in makeAutoResize()
-  defInput.dispatchEvent(new Event('input'));
+                    defInput.value = `${data.definition} (${data.partOfSpeech})`;
+                    // 👇 fire the resize you already wired up in makeAutoResize()
+                    defInput.dispatchEvent(new Event('input'));
 
-  saveDraft();
-};
+                    saveDraft();
+                };
 
-  wrapper.appendChild(autoFillBtn);
-
-  
-        function autoResizeField(textarea) {
-        // reset to auto to recalc
-        textarea.style.height = 'auto';
-        // then set height to fit content
-        textarea.style.height = textarea.scrollHeight + 'px';
-        }
-
-
-  // 10) Add to DOM and update state
-  document.getElementById('cardsContainer').appendChild(wrapper);
-  updateCardNumbers();
-  updateTrashButtons();
-  saveDraft();
-}
+                wrapper.appendChild(autoFillBtn);
 
 
-async function saveSet() {
-  const token = localStorage.getItem('token');
+                function autoResizeField(textarea) {
+                    // reset to auto to recalc
+                    textarea.style.height = 'auto';
+                    // then set height to fit content
+                    textarea.style.height = textarea.scrollHeight + 'px';
+                }
+
+
+                // 10) Add to DOM and update state
+                document.getElementById('cardsContainer').appendChild(wrapper);
+                updateCardNumbers();
+                updateTrashButtons();
+                saveDraft();
+            }
+
+
+            async function saveSet() {
+                const token = localStorage.getItem('token');
   const title       = document.getElementById('setTitle').value.trim();
-  const description = document.getElementById('setDescription').value;
-  // Gather all card rows
+                const description = document.getElementById('setDescription').value;
+                // Gather all card rows
   const cards = Array.from(document.querySelectorAll('.card-row')).map(row => ({
-    front: row.querySelector('.front').value.trim(),
+                    front: row.querySelector('.front').value.trim(),
     back:  row.querySelector('.back').value.trim()
-  }));
-  // Skip only those where BOTH term and definition are empty
+                }));
+                // Skip only those where BOTH term and definition are empty
   const validCards = cards.filter(c => c.front || c.back);
 
-  // 1) Title required
-  if (!title) {
-    alert('Please enter a title for your flashcard set.');
-    return;
-  }
-  // 2) At least one non‑blank card required
-  if (validCards.length === 0) {
-    alert('Please add at least one card (term or definition).');
-    return;
-  }
+                // 1) Title required
+                if (!title) {
+                    alert('Please enter a title for your flashcard set.');
+                    return;
+                }
+                // 2) At least one non‑blank card required
+                if (validCards.length === 0) {
+                    alert('Please add at least one card (term or definition).');
+                    return;
+                }
 
-  // 3) Create the set
-  const setRes = await fetch('/api/flashcards/sets', {
-    method: 'POST',
+                // 3) Create the set
+                const setRes = await fetch('/api/flashcards/sets', {
+                    method: 'POST',
     headers: { 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
-     },
+                    },
     body: JSON.stringify({ title, description})
-  });
-  const setData = await setRes.json();
+                });
+                const setData = await setRes.json();
 
-  // 4) Upload each valid card
-  for (const c of validCards) {
-    await fetch('/api/flashcards/cards', {
-      method: 'POST',
+                // 4) Upload each valid card
+                for (const c of validCards) {
+                    await fetch('/api/flashcards/cards', {
+                        method: 'POST',
       headers: { 'Content-Type': 'application/json',
                   'Authorization': `Bearer ${token}`  
-       },
-      body: JSON.stringify({
-        front: c.front,
+                        },
+                        body: JSON.stringify({
+                            front: c.front,
         back:  c.back,
         setId: setData._id
       })
-    });
-  }
+                    });
+                }
 
-  // 5) Notify user
-  alert('Flashcard Set Saved');
+                // 5) Notify user
+                alert('Flashcard Set Saved');
 
-  // 6) Clear draft, title & description, and reset UI
-  clearDraft();
-  document.getElementById('setTitle').value = '';
-  document.getElementById('setDescription').value = '';
-  document.getElementById('cardsContainer').innerHTML = '';
+                // 6) Clear draft, title & description, and reset UI
+                clearDraft();
+                document.getElementById('setTitle').value = '';
+                document.getElementById('setDescription').value = '';
+                document.getElementById('cardsContainer').innerHTML = '';
   addCard();  // start with one blank card
 
-  // 7) Reload saved‑sets list
-  loadSavedSets();
-}
+                // 7) Reload saved‑sets list
+                loadSavedSets();
+            }
 
-async function deleteSet(setId) {
-  if (!confirm('Are you sure you want to delete this flashcard set?')) return;
-  const res = await fetch(`/api/flashcards/sets/${setId}`, { method: 'DELETE' });
-  if (!res.ok) {
-    alert('Failed to delete set.');
-    return;
-  }
-  loadSavedSets();
-}
+            async function deleteSet(setId) {
+                if (!confirm('Are you sure you want to delete this flashcard set?')) return;
+                const token = localStorage.getItem('token');
+                const res = await fetch(`/api/flashcards/sets/${setId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                        'Content-Type': 'application/json',
+                    },
+                });
+                if (!res.ok) {
+                    alert('Failed to delete set.');
+                    return;
+                }
+                loadSavedSets();
+            }
 
-async function loadSavedSets() {
-  const res = await fetch('/api/flashcards/sets');
-  const sets = await res.json();
+            async function loadSavedSets() {
+                const token = localStorage.getItem('token');
+                const res = await fetch('/api/flashcards/sets', {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                        'Content-Type': 'application/json',
+                    },
+                });
+                const sets = await res.json();
 
-  const container = document.getElementById('savedSets');
-  container.innerHTML = '';
+                const container = document.getElementById('savedSets');
+                container.innerHTML = '';
   sets.forEach(set => {
-    const div = document.createElement('div');
-    div.className = 'flashcard';
-    // add a trash button in top-right
-    div.innerHTML = `
+                    const div = document.createElement('div');
+                    div.className = 'flashcard';
+                    // add a trash button in top-right
+                    div.innerHTML = `
       <button 
         class="set-trash-btn" 
         title="Delete set" 
@@ -581,15 +615,15 @@ async function loadSavedSets() {
       <a href="/viewSet.html?id=${set._id}">View Set</a>
       <button onclick="loadSetToStudy('${set._id}')">Study Set</button>
     `;
-    container.appendChild(div);
-  });
-}
+                    container.appendChild(div);
+                });
+            }
 
-        loadSavedSets();
+            loadSavedSets();
         loadDraft();       // rebuild any in‑progress cards
-        if (document.querySelectorAll('.card-editor').length === 0) {
+            if (document.querySelectorAll('.card-editor').length === 0) {
         addCard();       // ensure at least one card if no draft
-        }
+            }
 
          document
         .getElementById('setTitle')
@@ -600,118 +634,75 @@ async function loadSavedSets() {
 
 
 
-        let currentSetCards = [];
-        let currentCardIndex = 0;
-        let showingFront = true;
+            let currentSetCards = [];
+            let currentCardIndex = 0;
+            let showingFront = true;
 
-        // Load cards from a selected set
-        async function loadSetToStudy(setId) {
-            const cards = await fetch(`/api/flashcards/cards/by-set/${setId}`).then(res => res.json());
-            if (!cards.length) {
-                alert("This set has no cards!");
-                return;
+            // Load cards from a selected set
+            async function loadSetToStudy(setId) {
+                // Redirect to a dedicated study page
+                window.location.href = `/viewSet.html?id=${setId}`;
             }
-            currentSetCards = cards;
-            currentCardIndex = 0;
-            showingFront = true;
-            displayCurrentCard();
-        }
 
-        function saveDraft() {
+            function saveDraft() {
         const title       = document.getElementById('setTitle').value;
-        const description = document.getElementById('setDescription').value;
+                const description = document.getElementById('setDescription').value;
         const cards = Array.from(document.querySelectorAll('.card-editor')).map(w => ({
-            front: w.querySelector('.front').value,
+                    front: w.querySelector('.front').value,
             back:  w.querySelector('.back').value
-        }));
-        localStorage.setItem('flashcardDraft', JSON.stringify({ title, description, cards }));
-        }
-
-
-        // Wipe the draft once the set is actually saved
-        function clearDraft() {
-        localStorage.removeItem('flashcardDraft');
-        }
-
-
-        function displayCurrentCard() {
-            if (!currentSetCards.length) return;
-
-            const card = currentSetCards[currentCardIndex];
-            const cardText = showingFront ? card.front : card.back;
-            document.getElementById('flashcard').textContent = cardText;
-            document.getElementById('card-counter').textContent = `${currentCardIndex + 1} / ${currentSetCards.length}`;
-        }
-
-        function nextCard() {
-            if (currentSetCards.length === 0) return;
-            currentCardIndex = (currentCardIndex + 1) % currentSetCards.length;
-            showingFront = true;
-            displayCurrentCard();
-        }
-
-        function prevCard() {
-            if (currentSetCards.length === 0) return;
-            currentCardIndex = (currentCardIndex - 1 + currentSetCards.length) % currentSetCards.length;
-            showingFront = true;
-            displayCurrentCard();
-        }
-
-        function shuffleCards() {
-            for (let i = currentSetCards.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [currentSetCards[i], currentSetCards[j]] = [currentSetCards[j], currentSetCards[i]];
+                }));
+                localStorage.setItem('flashcardDraft', JSON.stringify({ title, description, cards }));
             }
-            currentCardIndex = 0;
-            showingFront = true;
-            displayCurrentCard();
-        }
 
-        function flipCard() {
-            showingFront = !showingFront;
-            displayCurrentCard();
-        }
 
-        function updateCardNumbers() {
-        document.querySelectorAll('.card-editor').forEach((wrap, i) => {
-            wrap.querySelector('.card-number').innerText = i + 1;
-        });
-        }
+            // Wipe the draft once the set is actually saved
+            function clearDraft() {
+                localStorage.removeItem('flashcardDraft');
+            }
 
-        function updateTrashButtons() {
-        const editors = document.querySelectorAll('.card-editor');
-        const canDelete = editors.length > 2;
+
+
+
+            function updateCardNumbers() {
+                document.querySelectorAll('.card-editor').forEach((wrap, i) => {
+                    wrap.querySelector('.card-number').innerText = i + 1;
+                });
+            }
+
+            function updateTrashButtons() {
+                const editors = document.querySelectorAll('.card-editor');
+                const canDelete = editors.length > 2;
         editors.forEach(wrap => {
-            const btn = wrap.querySelector('.trash-btn');
-            if (canDelete) btn.classList.remove('disabled');
+                    const btn = wrap.querySelector('.trash-btn');
+                    if (canDelete) btn.classList.remove('disabled');
             else          btn.classList.add('disabled');
-        });
-        }
+                });
+            }
 
         
 
-    </script>
+        </script>
 
-    <!-- SortableJS for drag & drop -->
-    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
-    <script>
-  Sortable.create(document.getElementById('cardsContainer'), {
-    handle: '.drag-handle',
-    animation: 150,
-    onEnd: () => {
-      updateCardNumbers();
-      updateTrashButtons();
-      saveDraft();
+        <!-- SortableJS for drag & drop -->
+        <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+        <script>
+            Sortable.create(document.getElementById('cardsContainer'), {
+                handle: '.drag-handle',
+                animation: 150,
+                onEnd: () => {
+                    updateCardNumbers();
+                    updateTrashButtons();
+                    saveDraft();
     }
-  });
-  // initial numbering/trash state
-  updateCardNumbers();
-  updateTrashButtons();
-  saveDraft();
+            });
+            // initial numbering/trash state
+            updateCardNumbers();
+            updateTrashButtons();
+            saveDraft();
 
-</script>
+        </script>
 
 
 
-</body>
+    </body>
 </html>

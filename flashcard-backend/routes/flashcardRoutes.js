@@ -3,11 +3,12 @@ const router = express.Router();
 const Set = require('../models/set');
 const Card = require('../models/card');
 const auth = require('../middleware/authMiddleware');
+const roleAuth = require('../middleware/roleMiddleware');
 
 const axios = require('axios');
 
 // Lookup word from dictionary API
-router.get('/lookup/:word', async (req, res) => {
+router.get('/lookup/:word', auth, async (req, res) => {
   const word = req.params.word;
   try {
     const response = await axios.get(`https://api.dictionaryapi.dev/api/v2/entries/en/${word}`);
@@ -23,21 +24,72 @@ router.get('/lookup/:word', async (req, res) => {
   }
 });
 
-// GET /api/flashcards/sets?search=keyword
-router.get('/sets', async (req, res) => {
+router.get('/admin/all-sets', auth, roleAuth('admin'), async (req, res) => {
   try {
-    const q = req.query.search;
-    let filter = {};
-    if (q) {
-      filter.title = { $regex: q, $options: 'i' };
-    }
-    const sets = await Set.find(filter).sort({ updatedAt: -1 }); 
+    const sets = await Set.find().populate('createdBy', 'username');
     res.json(sets);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
+router.delete('/admin/sets/:id', auth, roleAuth('admin'), async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    const set = await Set.findByIdAndDelete(id);
+    if (!set) {
+      return res.status(404).json({ error: 'Set not found' });
+    }
+
+    await Card.deleteMany({ setId: id });
+
+    res.json({ message: 'Set and all its cards deleted successfully' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+router.get('/sets/:id', auth, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const set = await Set.findById(id);
+    
+    if (!set) {
+      return res.status(404).json({ error: 'Set not found' });
+    }
+
+    // Admin can see any set, users can only see their own
+    if (req.user.role !== 'admin' && set.createdBy.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ error: 'You can only view your own sets' });
+    }
+
+    res.json(set);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// GET /api/flashcards/sets?search=keyword
+router.get('/sets', auth, async (req, res) => {
+  try {
+    const q = req.query.search;
+    let filter = {};
+    if (q) {
+      filter.title = { $regex: q, $options: 'i' };
+    }
+
+    // Admin can see all sets, users can only see their own
+    if (req.user.role !== 'admin') {
+      filter.createdBy = req.user._id;
+    }
+
+    const sets = await Set.find(filter).sort({ updatedAt: -1 });
+    res.json(sets);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 
 // Create a new flashcard set
 router.post('/sets', auth, async (req, res) => {
@@ -54,21 +106,20 @@ router.post('/sets', auth, async (req, res) => {
   }
 });
 
-
-// Get all sets
-router.get('/sets', async (req, res) => {
-  try {
-    const sets = await Set.find();
-    res.json(sets);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
 // Delete a flashcard set and its cards
-router.delete('/sets/:id', async (req, res) => {
+router.delete('/sets/:id', auth, async (req, res) => {
   try {
     const { id } = req.params;
+
+    const set = await Set.findById(id);
+    if (!set) {
+      return res.status(404).json({ error: 'Set not found' });
+    }
+
+    if (req.user.role !== 'admin' && set.createdBy.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ error: 'You can only delete your own sets' });
+    }
+
     // Remove all cards belonging to that set
     await Card.deleteMany({ setId: id });
     // Remove the set itself
@@ -82,9 +133,21 @@ router.delete('/sets/:id', async (req, res) => {
 
 
 // Create a new card in a set
-router.post('/cards', async (req, res) => {
+router.post('/cards', auth, async (req, res) => {
   try {
-    const card = new Card(req.body);
+    const set = await Set.findById(req.body.setId);
+    if (!set) {
+      return res.status(404).json({ error: 'Set not found' });
+    }
+
+    if (req.user.role !== 'admin' && set.createdBy.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ error: 'You can only add cards to your own sets' });
+    }
+
+    const card = new Card({
+      ...req.body,
+      createdBy: req.user._id
+    });
     await card.save();
     res.status(201).json(card);
   } catch (err) {
@@ -93,8 +156,17 @@ router.post('/cards', async (req, res) => {
 });
 
 // Get all cards for a set
-router.get('/cards/by-set/:setId', async (req, res) => {
+router.get('/cards/by-set/:setId', auth, async (req, res) => {
   try {
+    const set = await Set.findById(req.params.setId);
+    if (!set) {
+      return res.status(404).json({ error: 'Set not found' });
+    }
+
+    if (req.user.role !== 'admin' && set.createdBy.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ error: 'You can only view cards from your own sets' });
+    }
+
     const cards = await Card.find({ setId: req.params.setId });
     res.json(cards);
   } catch (err) {
@@ -103,8 +175,17 @@ router.get('/cards/by-set/:setId', async (req, res) => {
 });
 
 // Update a card
-router.put('/cards/:id', async (req, res) => {
+router.put('/cards/:id', auth, async (req, res) => {
   try {
+    const card = await Card.findById(req.params.id);
+    if (!card) {
+      return res.status(404).json({ error: 'Card not found' });
+    }
+
+    if (req.user.role !== 'admin' && card.createdBy.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ error: 'You can only update your own cards' });
+    }
+
     const updated = await Card.findByIdAndUpdate(req.params.id, req.body, { new: true });
     res.json(updated);
   } catch (err) {
@@ -113,8 +194,17 @@ router.put('/cards/:id', async (req, res) => {
 });
 
 // Delete a card
-router.delete('/cards/:id', async (req, res) => {
+router.delete('/cards/:id', auth, async (req, res) => {
   try {
+    const card = await Card.findById(req.params.id);
+    if (!card) {
+      return res.status(404).json({ error: 'Card not found' });
+    }
+
+    if (req.user.role !== 'admin' && card.createdBy.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ error: 'You can only delete your own cards' });
+    }
+
     const deleted = await Card.findByIdAndDelete(req.params.id);
     res.json({ message: 'Card deleted', deleted });
   } catch (err) {
@@ -122,7 +212,7 @@ router.delete('/cards/:id', async (req, res) => {
   }
 });
 
-router.post('/ai-generate', async (req, res) => {
+router.post('/ai-generate', auth, async (req, res) => {
   try {
     const { topic, count = 5 } = req.body;
 

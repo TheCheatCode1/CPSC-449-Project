@@ -320,22 +320,12 @@
             window.location.href = '/';
         }
 
-        const sidebar = document.getElementById('sidebar');
-        sidebar.addEventListener('mouseenter', () => {
-            sidebar.classList.add('expanded');
-        });
-        sidebar.addEventListener('mouseleave', () => {
-            sidebar.classList.remove('expanded');
-        });
-
-        document.getElementById('logoutButton').addEventListener('click', () => {
-            localStorage.clear();
-            window.location.href = '/';
-        });
     </script>
 <script>
   // 1) Sidebar load & auth‑guard (unchanged)
-  fetch('/sidebar.html')
+  const sidebarPath = role === 'admin' ? '/adminSidebar.html' : '/sidebar.html';
+  
+  fetch(sidebarPath)
     .then(r=>r.text())
     .then(html=>{
       document.getElementById('sidebar-container').innerHTML = html;
@@ -363,7 +353,13 @@
 async function loadDashboard() {
   // Load recent viewed sets
   try {
-    const res = await fetch('/api/flashcards/sets');
+    const token = localStorage.getItem('token');
+    const res = await fetch('/api/flashcards/sets', {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
+    });
     const sets = await res.json();
 
     // total sets
@@ -379,7 +375,18 @@ async function loadDashboard() {
       } else {
         for (const id of viewedIds) {
           try {
-            const res = await fetch(`/api/flashcards/sets/${id}`);
+            const res = await fetch(`/api/flashcards/sets/${id}`, {
+              headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+              }
+            });
+            
+            if (!res.ok) {
+              console.warn(`Failed to load set ${id}: HTTP ${res.status}`);
+              continue;
+            }
+            
             const s = await res.json();
             const d = document.createElement('div');
             d.className = 'set-card';
@@ -395,19 +402,30 @@ async function loadDashboard() {
     }
   } catch (e) {
     console.error('Dashboard load failed', e);
+    const recent = document.getElementById('recentSetsList');
+    if (recent) recent.innerHTML = `<p style="color:#444;">Could not load sets.</p>`;
   }
 
   // Load quizzes
   try {
-    const quizRes = await fetch('/api/quizzes');
+    const token = localStorage.getItem('token');
+    const quizRes = await fetch('/api/quizzes', {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
+    });
+    
+    if (!quizRes.ok) {
+      throw new Error(`HTTP ${quizRes.status}: ${quizRes.statusText}`);
+    }
+    
     const quizzes = await quizRes.json();
     const recentQ = document.getElementById('recentQuizzesList');
     if (recentQ) {
       recentQ.innerHTML = '';
-      quizzes
-        .slice(-5)
-        .reverse()
-        .forEach(q => {
+      if (Array.isArray(quizzes) && quizzes.length > 0) {
+        quizzes.slice(-5).reverse().forEach(q => {
           const card = document.createElement('div');
           card.className = 'set-card';
           card.innerHTML = `<h4>${q.title}</h4>
@@ -416,9 +434,14 @@ async function loadDashboard() {
             location.href = `/takeQuiz.html?quizId=${q._id}`;
           recentQ.append(card);
         });
+      } else {
+        recentQ.innerHTML = `<p style="color:#444;">No quizzes available.</p>`;
+      }
     }
   } catch (err) {
     console.warn('Could not load quizzes:', err);
+    const recentQ = document.getElementById('recentQuizzesList');
+    if (recentQ) recentQ.innerHTML = `<p style="color:#444;">Could not load quizzes.</p>`;
   }
 
   // Tip of the day
@@ -456,7 +479,13 @@ input.addEventListener('input', debounce(async e => {
     return;
   }
   try {
-    const res = await fetch(`/api/flashcards/sets?search=${encodeURIComponent(q)}`);
+    const token = localStorage.getItem('token');
+    const res = await fetch(`/api/flashcards/sets?search=${encodeURIComponent(q)}`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
+    });
     if (!res.ok) throw 'Network error';
     const sets = await res.json();
     suggList.innerHTML = sets

@@ -84,18 +84,27 @@
     }
 
     #flashcard {
-      width: 300px;
-      height: 200px;
+      width: 90%;
+      max-width: 600px;
+      min-height: 200px;
+      max-height: 400px;
       border: 1px solid #ccc;
       display: flex;
       align-items: center;
       justify-content: center;
       margin: 20px 0;
-      font-size: 24px;
+      font-size: 18px;
+      line-height: 1.4;
       cursor: pointer;
       user-select: none;
       transition: transform 0.6s;
       background-color: #f8f8f8;
+      padding: 20px;
+      overflow-wrap: break-word;
+      word-wrap: break-word;
+      word-break: break-word;
+      text-align: center;
+      box-sizing: border-box;
     }
 
     #controls {
@@ -146,20 +155,61 @@
       return;
     }
 
-    const sets = await fetch(`/api/flashcards/sets`).then(res => res.json());
-    const selected = sets.find(s => s._id === setId);
+    try {
+      const token = localStorage.getItem('token');
+      const setsRes = await fetch(`/api/flashcards/sets`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (!setsRes.ok) {
+        throw new Error(`HTTP ${setsRes.status}: ${setsRes.statusText}`);
+      }
+      
+      const sets = await setsRes.json();
+      
+      if (!Array.isArray(sets)) {
+        throw new Error('Invalid response format');
+      }
+      
+      const selected = sets.find(s => s._id === setId);
 
-    if (!selected) {
-      document.getElementById('setTitle').textContent = 'Set not found.';
-      return;
+      if (!selected) {
+        document.getElementById('setTitle').textContent = 'Set not found.';
+        return;
+      }
+
+      document.getElementById('setTitle').textContent = selected.title;
+
+      // Track this set as recently viewed in localStorage
+      const viewedIds = JSON.parse(localStorage.getItem('recentViewedSets') || '[]');
+      if (!viewedIds.includes(setId)) {
+        viewedIds.unshift(setId); // Add to beginning
+        viewedIds.splice(10); // Keep only last 10
+        localStorage.setItem('recentViewedSets', JSON.stringify(viewedIds));
+      }
+
+      const cardsRes = await fetch(`/api/flashcards/cards/by-set/${setId}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (!cardsRes.ok) {
+        throw new Error(`HTTP ${cardsRes.status}: ${cardsRes.statusText}`);
+      }
+      
+      cards = await cardsRes.json();
+      currentIndex = 0;
+      showingFront = true;
+      displayCard();
+    } catch (error) {
+      console.error('Error loading set:', error);
+      document.getElementById('setTitle').textContent = 'Error loading set.';
     }
-
-    document.getElementById('setTitle').textContent = selected.title;
-
-    cards = await fetch(`/api/flashcards/cards/by-set/${setId}`).then(res => res.json());
-    currentIndex = 0;
-    showingFront = true;
-    displayCard();
   }
 
   function displayCard() {
@@ -215,7 +265,11 @@
 </script>
 
 <script>
-  fetch('/sidebar.html')
+  // Check if user is admin and load appropriate sidebar
+  const role = localStorage.getItem('role');
+  const sidebarPath = role === 'admin' ? '/adminSidebar.html' : '/sidebar.html';
+  
+  fetch(sidebarPath)
     .then(response => response.text())
     .then(html => {
       document.getElementById('sidebar-container').innerHTML = html;
