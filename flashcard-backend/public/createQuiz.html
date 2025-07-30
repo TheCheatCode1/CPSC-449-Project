@@ -137,8 +137,13 @@
       <div id="questionsContainer"></div>
 
       <button type="button" onclick="addQuestion()">+ Add Question</button>
-      <button type="submit">Save Quiz</button>
+      <button type="button" onclick="submitQuiz()">Save Quiz</button>
+
     </form>
+
+    <h3>Saved Quizzes</h3>
+<div id="savedQuizzes"></div>
+
   </div>
 
   <script>
@@ -165,43 +170,153 @@
       questionsContainer.appendChild(div);
     }
 
-    document.getElementById('quizForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
+async function submitQuiz() {
+  const title = document.getElementById('quizTitle').value;
+  const description = document.getElementById('quizDesc').value;
+  const blocks = document.querySelectorAll('.question-block');
 
-      const title = document.getElementById('quizTitle').value;
-      const description = document.getElementById('quizDesc').value;
-      const blocks = document.querySelectorAll('.question-block');
+  const questions = [];
 
-      const questions = [];
+  blocks.forEach(block => {
+    const questionText = block.querySelector('.question').value;
+    const options = Array.from(block.querySelectorAll('.option')).map(opt => opt.value).filter(Boolean);
+    const correct = block.querySelector('.correct').value;
+    const correctAnswer = options[['A', 'B', 'C', 'D'].indexOf(correct)];
 
-      blocks.forEach(block => {
-        const questionText = block.querySelector('.question').value;
-        const options = Array.from(block.querySelectorAll('.option')).map(opt => opt.value).filter(Boolean);
-        const correct = block.querySelector('.correct').value;
-        const correctAnswer = options[['A', 'B', 'C', 'D'].indexOf(correct)];
+    questions.push({
+      question: questionText,
+      options,
+      correctAnswer
+    });
+  });
 
-        questions.push({
-          question: questionText,
-          options,
-          correctAnswer
-        });
+  const token = localStorage.getItem('token');
+  const response = await fetch('/api/quizzes', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    },
+    body: JSON.stringify({ title, description, questions })
+  });
+
+  const result = await response.json();
+
+  if (response.ok && result._id) {
+    alert('✅ Quiz saved successfully!');
+    loadSavedQuizzes(); // Refresh the Saved Quizzes section
+    document.getElementById('quizForm').reset(); // Clear the form
+    document.getElementById('questionsContainer').innerHTML = '';
+    addQuestion(); // Start fresh
+  } else {
+    console.error('Quiz creation failed:', result);
+    alert('❌ Quiz creation failed. Check console.');
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  addQuestion(); // Start with one question once DOM is ready
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+  loadSavedQuizzes(); // or whatever functions you're running
+});
+
+
+  </script>
+
+  <script>
+  async function loadSavedQuizzes() {
+    const token = localStorage.getItem('token');
+    try {
+      const res = await fetch('/api/quizzes', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
       });
-      const token = localStorage.getItem('token');
-      const response = await fetch('/api/quizzes', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-         },
-        body: JSON.stringify({ title, description, questions, createdBy: 'Anonymous' })
-      });
+      const quizzes = await res.json();
+      const container = document.getElementById('savedQuizzes');
+      container.innerHTML = '';
 
-      const result = await response.json();
-      alert('Quiz saved!');
-      window.location.href = `/takeQuiz.html?id=${result._id}`;
+      if (!quizzes.length) {
+        container.textContent = 'No saved quizzes yet.';
+        return;
+      }
+
+     quizzes.forEach(quiz => {
+  const box = document.createElement('div');
+  box.style.border = '1px solid #000';
+  box.style.padding = '10px';
+  box.style.marginBottom = '10px';
+  box.style.backgroundColor = '#eee';
+  box.style.position = 'relative';
+
+  // Trash can delete button
+  const deleteBtn = document.createElement('button');
+  deleteBtn.textContent = '🗑️';
+  deleteBtn.style.position = 'absolute';
+  deleteBtn.style.top = '5px';
+  deleteBtn.style.right = '5px';
+  deleteBtn.style.border = 'none';
+  deleteBtn.style.background = 'transparent';
+  deleteBtn.style.cursor = 'pointer';
+  deleteBtn.title = 'Delete Quiz';
+deleteBtn.onclick = async () => {
+  const confirmed = confirm('Are you sure you want to delete this quiz?');
+  if (!confirmed) return;
+
+  try {
+    const res = await fetch(`/api/quizzes/${quiz._id}`, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
     });
 
-    addQuestion(); // Start with one question
-  </script>
+    const result = await res.json();
+    if (res.ok) {
+      alert('✅ Quiz deleted');
+      loadSavedQuizzes();
+    } else {
+      console.error(result);
+      alert('❌ Failed to delete quiz');
+    }
+  } catch (err) {
+    console.error(err);
+    alert('❌ Failed to delete quiz');
+  }
+};
+
+
+  const title = document.createElement('strong');
+  title.textContent = quiz.title;
+
+  const desc = document.createElement('p');
+  desc.textContent = quiz.description;
+
+  const viewBtn = document.createElement('button');
+  viewBtn.textContent = 'View Quiz';
+  viewBtn.onclick = () => {
+    window.location.href = `/takeQuiz.html?id=${quiz._id}`;
+  };
+
+  box.appendChild(deleteBtn);
+  box.appendChild(title);
+  box.appendChild(desc);
+  box.appendChild(viewBtn);
+  container.appendChild(box);
+});
+
+    } catch (err) {
+      console.error('Failed to load saved quizzes:', err);
+      document.getElementById('savedQuizzes').textContent = 'Error loading quizzes.';
+    }
+  }
+
+  // Load on page start
+  loadSavedQuizzes();
+</script>
+
 
     <script>
     const sidebar = document.getElementById('sidebar');
