@@ -220,7 +220,7 @@
     }
 
     const currentCard = cards[currentIndex];
-    document.getElementById('flashcard').textContent = showingFront ? currentCard.front : currentCard.back;
+document.getElementById('flashcard').textContent = showingFront ? currentCard.term : currentCard.definition;
     document.getElementById('counter').textContent = `${currentIndex + 1}/${cards.length}`;
   }
 

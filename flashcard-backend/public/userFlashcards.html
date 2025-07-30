@@ -339,7 +339,7 @@
 
                 const container = document.getElementById('cardsContainer');
                 container.innerHTML = '';
-    draft.cards.forEach(c => addCard(c.front, c.back));
+    draft.cards.forEach(c => addCard(c.term, c.definition));
 
                 // <- new code here
     document
@@ -514,11 +514,11 @@ defInput.style.resize   = 'none';
                 const description = document.getElementById('setDescription').value;
                 // Gather all card rows
   const cards = Array.from(document.querySelectorAll('.card-row')).map(row => ({
-                    front: row.querySelector('.front').value.trim(),
-    back:  row.querySelector('.back').value.trim()
+                    term: row.querySelector('.front').value.trim(),
+    definition:  row.querySelector('.back').value.trim()
                 }));
                 // Skip only those where BOTH term and definition are empty
-  const validCards = cards.filter(c => c.front || c.back);
+  const validCards = cards.filter(c => c.term || c.definition);
 
                 // 1) Title required
                 if (!title) {
@@ -543,18 +543,28 @@ defInput.style.resize   = 'none';
 
                 // 4) Upload each valid card
                 for (const c of validCards) {
-                    await fetch('/api/flashcards/cards', {
-                        method: 'POST',
-      headers: { 'Content-Type': 'application/json',
-                  'Authorization': `Bearer ${token}`  
-                        },
-                        body: JSON.stringify({
-                            front: c.front,
-        back:  c.back,
-        setId: setData._id
-      })
-                    });
-                }
+
+                    console.log("👉 Sending card:", {
+  term: c.term,
+  definition: c.definition,
+  setId: setData._id
+});
+
+  await fetch('/api/flashcards/cards', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    },
+    body: JSON.stringify({
+      term: c.term,
+      definition: c.definition,
+      setId: setData._id
+    })
+  });
+}
+
+
 
                 // 5) Notify user
                 alert('Flashcard Set Saved');
@@ -648,8 +658,8 @@ defInput.style.resize   = 'none';
         const title       = document.getElementById('setTitle').value;
                 const description = document.getElementById('setDescription').value;
         const cards = Array.from(document.querySelectorAll('.card-editor')).map(w => ({
-                    front: w.querySelector('.front').value,
-            back:  w.querySelector('.back').value
+                    term: w.querySelector('.front').value,
+            definition:  w.querySelector('.back').value
                 }));
                 localStorage.setItem('flashcardDraft', JSON.stringify({ title, description, cards }));
             }

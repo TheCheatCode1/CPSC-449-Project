@@ -1,5 +1,5 @@
 const express = require('express');
-const Set = require('../models/Set'); // Capital S to match filename
+const Set = require('../models/set'); // Capital S to match filename
 const auth = require('../middleware/authMiddleware');
 const router = express.Router();
 

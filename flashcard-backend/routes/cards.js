@@ -7,25 +7,32 @@ const auth = require('../middleware/authMiddleware');
 // Create a new card
 router.post('/', auth, async (req, res) => {
   try {
+    console.log("Incoming card data from frontend:", req.body);
     const set = await Set.findById(req.body.setId);
     if (!set) {
       return res.status(404).json({ error: 'Set not found' });
     }
 
-    if (req.user.role !== 'admin' && set.createdBy.toString() !== req.user._id.toString()) {
+    if (req.user.role !== 'admin' && set.userId.toString() !== req.user._id.toString()) {
       return res.status(403).json({ error: 'You can only add cards to your own sets' });
     }
 
     const card = new Card({
-      ...req.body,
-      createdBy: req.user._id
+      term: req.body.term,
+      definition: req.body.definition,
+      setId: req.body.setId,
+      userId: req.user._id   // <-- this is crucial
     });
+
     await card.save();
     res.status(201).json(card);
   } catch (err) {
-    res.status(400).json({ error: err.message });
-  }
+  console.error("Card save failed:", err.message); // log reason for failure
+  res.status(400).json({ error: err.message });
+}
+
 });
+
 
 // Get all cards for a specific set
 router.get('/by-set/:setId', auth, async (req, res) => {
@@ -35,7 +42,7 @@ router.get('/by-set/:setId', auth, async (req, res) => {
       return res.status(404).json({ error: 'Set not found' });
     }
 
-    if (req.user.role !== 'admin' && set.createdBy.toString() !== req.user._id.toString()) {
+    if (req.user.role !== 'admin' && set.userId.toString() !== req.user._id.toString()) {
       return res.status(403).json({ error: 'You can only view cards from your own sets' });
     }
 
@@ -54,7 +61,7 @@ router.put('/:id', auth, async (req, res) => {
       return res.status(404).json({ error: 'Card not found' });
     }
 
-    if (req.user.role !== 'admin' && card.createdBy.toString() !== req.user._id.toString()) {
+    if (req.user.role !== 'admin' && card.userId.toString() !== req.user._id.toString()) {
       return res.status(403).json({ error: 'You can only update your own cards' });
     }
 
@@ -73,7 +80,7 @@ router.delete('/:id', auth, async (req, res) => {
       return res.status(404).json({ error: 'Card not found' });
     }
 
-    if (req.user.role !== 'admin' && card.createdBy.toString() !== req.user._id.toString()) {
+    if (req.user.role !== 'admin' && card.userId.toString() !== req.user._id.toString()) {
       return res.status(403).json({ error: 'You can only delete your own cards' });
     }
 
