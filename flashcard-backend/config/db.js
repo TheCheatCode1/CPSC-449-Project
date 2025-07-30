@@ -1,8 +1,10 @@
 const mongoose = require('mongoose');
+require('dotenv').config(); // ✅ Load from .env
 
 const connectDB = async () => {
   try {
-    const conn = await mongoose.connect('mongodb://localhost:27017/quizApp', {
+    const uri = process.env.MONGO_URI; // ✅ Use variable from .env
+    const conn = await mongoose.connect(uri, {
       useNewUrlParser: true,
       useUnifiedTopology: true
     });
@@ -10,7 +12,7 @@ const connectDB = async () => {
     console.log(`✅ MongoDB connected: ${conn.connection.name}`);
   } catch (err) {
     console.error(`❌ MongoDB connection error: ${err.message}`);
-    process.exit(1); // Stop the app if DB fails
+    process.exit(1);
   }
 };
 
