@@ -249,7 +249,7 @@ if (sidebar) {
           body: JSON.stringify({
             title: `AI Generated - ${topic}`,
             description: `AI-generated flashcards for ${topic}`,
-            createdBy: user
+            createdBy: localStorage.getItem('userId')
           })
         });
         if (!r.ok) throw new Error('Set creation failed');
@@ -263,8 +263,8 @@ if (sidebar) {
             },
             body: JSON.stringify({
               setId: set._id,
-              front: f.front,
-              back: f.back,
+              term: f.front,
+              definition: f.back,
               example: f.example
             })
           });
