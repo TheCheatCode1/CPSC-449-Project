@@ -58,6 +58,8 @@ exports.getUserData = async (req, res) => {
 exports.deleteById = async (req, res) => {
   try {
     const { username, type, id } = req.params;
+    const io = req.app.get('io'); // 🔌 Get socket.io instance
+
     if (!username || !type || !id) {
       return res.status(400).json({ message: 'Missing params' });
     }
@@ -67,8 +69,13 @@ exports.deleteById = async (req, res) => {
     if (type === 'set') {
       const set = await Set.findOne({ _id: id, userId: user._id });
       if (!set) return res.status(404).json({ message: 'Set not found for user' });
+
       await Card.deleteMany({ setId: set._id });
       await set.deleteOne();
+
+      // 🔥 Broadcast to all connected users
+      io.emit('item-deleted', { type: 'set', id });
+
       return res.json({ message: 'Set and its cards deleted' });
     }
 
@@ -77,18 +84,30 @@ exports.deleteById = async (req, res) => {
       const sets = await Set.find({ userId: user._id }).lean();
       const setIds = sets.map(set => set._id.toString());
       const card = await Card.findById(id).lean();
+
       if (!card || !setIds.includes(card.setId.toString())) {
         return res.status(404).json({ message: 'Card not found for user' });
       }
+
       await Card.deleteOne({ _id: id });
+
+      // 🔥 Broadcast to all connected users
+      io.emit('item-deleted', { type: 'card', id });
+
       return res.json({ message: 'Card deleted' });
     }
 
     if (type === 'quiz') {
       if (!Quiz?.findOne) return res.status(400).json({ message: 'Quizzes not implemented' });
+
       const quiz = await Quiz.findOne({ _id: id, userId: user._id });
       if (!quiz) return res.status(404).json({ message: 'Quiz not found for user' });
+
       await quiz.deleteOne();
+
+      // 🔥 Broadcast to all connected users
+      io.emit('item-deleted', { type: 'quiz', id });
+
       return res.json({ message: 'Quiz deleted' });
     }
 

@@ -3,7 +3,7 @@ require('dotenv').config(); // ✅ Load from .env
 
 const connectDB = async () => {
   try {
-    const uri = process.env.MONGO_URI; // ✅ Use variable from .env
+    const uri = process.env.MONGODB_URI; // ✅ Use variable from .env
     const conn = await mongoose.connect(uri, {
       useNewUrlParser: true,
       useUnifiedTopology: true

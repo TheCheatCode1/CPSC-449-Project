@@ -207,13 +207,13 @@
         });
 
         const data = await res.json();
-        if (res.ok && data && data.token && data.role) {
-            localStorage.setItem('token', data.token);
-            localStorage.setItem('role', data.role);
-            localStorage.setItem('username', username);
+        if (res.ok && data && data.token && data.user?.role) {
+          localStorage.setItem('token', data.token);
+          localStorage.setItem('role', data.user.role);
+          localStorage.setItem('username', data.user.username);
 
-            alert(`Logged in as ${data.role}`);
-            if (data.role === 'admin') {
+            alert(`Logged in as ${data.user.role}`);
+            if (data.user.role === 'admin') {
                 window.location.href = '/admin.html';
             } else {
                 window.location.href = '/user.html';

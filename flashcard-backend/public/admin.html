@@ -24,7 +24,6 @@
   </div>
 
   <div id="status" class="muted"></div>
-
   <div class="counts" id="counts"></div>
 
   <div class="section">
@@ -42,24 +41,11 @@
     <div id="quizzes"></div>
   </div>
 
+  <!-- ✅ Load socket.io AFTER DOM is ready -->
+  <script src="/socket.io/socket.io.js"></script>
   <script>
-      const BASE_URL = '';
-
-
-    // Basic guard: redirect non-admins (expects token/role in localStorage)
-    (function guard() {
-      const role = localStorage.getItem('role');
-      const token = localStorage.getItem('token');
-      if (!token) {
-        alert('Please log in.');
-        window.location.href = '/login.html';
-        return;
-      }
-      if (role !== 'admin') {
-        alert('Admins only.');
-        window.location.href = '/user.html';
-      }
-    })();
+    const socket = io();
+    const BASE_URL = '';
 
     const els = {
       username: document.getElementById('username'),
@@ -78,18 +64,19 @@
       };
     }
 
-    function renderCounts(counts, user) {
-      els.counts.textContent = '';
-      if (!counts) return;
-      const div = document.createElement('div');
-      div.innerHTML = `
-        <strong>User:</strong> ${user.username} (${user.role})<br/>
-        <strong>Sets:</strong> ${counts.sets} &nbsp; | &nbsp;
-        <strong>Cards:</strong> ${counts.cards} &nbsp; | &nbsp;
-        <strong>Quizzes:</strong> ${counts.quizzes}
-      `;
-      els.counts.appendChild(div);
-    }
+    (function guard() {
+      const role = localStorage.getItem('role');
+      const token = localStorage.getItem('token');
+      if (!token) {
+        alert('Please log in.');
+        window.location.href = '/login.html';
+        return;
+      }
+      if (role !== 'admin') {
+        alert('Admins only.');
+        window.location.href = '/user.html';
+      }
+    })();
 
     function itemRow(label, onDelete) {
       const row = document.createElement('div');
@@ -115,11 +102,27 @@
         const data = await res.json();
         if (!res.ok) throw new Error(data.message || 'Delete failed');
         els.status.textContent = data.message || 'Deleted';
-        // Refresh results
-        await search();
+
+        // Emit event to clients
+        socket.emit('admin-delete', { type, id });
+
+        await search(); // Refresh UI
       } catch (err) {
         els.status.textContent = `Error: ${err.message}`;
       }
+    }
+
+    function renderCounts(counts, user) {
+      els.counts.textContent = '';
+      if (!counts) return;
+      const div = document.createElement('div');
+      div.innerHTML = `
+        <strong>User:</strong> ${user.username} (${user.role})<br/>
+        <strong>Sets:</strong> ${counts.sets} &nbsp; | &nbsp;
+        <strong>Cards:</strong> ${counts.cards} &nbsp; | &nbsp;
+        <strong>Quizzes:</strong> ${counts.quizzes}
+      `;
+      els.counts.appendChild(div);
     }
 
     function renderSets(sets, username) {
@@ -171,17 +174,20 @@
       });
     }
 
-    async function search() {
+    // ✅ Expose globally for debugging
+    window.search = async function search() {
       const username = els.username.value.trim();
       if (!username) {
         els.status.textContent = 'Please enter a username.';
         return;
       }
+
       els.status.textContent = 'Loading…';
 
       try {
-        const url = `${BASE_URL}/admin/user-data?username=${encodeURIComponent(username)}`;
-        const res = await fetch(url, { headers: authHeaders() });
+        const res = await fetch(`${BASE_URL}/admin/user-data?username=${encodeURIComponent(username)}`, {
+          headers: authHeaders()
+        });
         const data = await res.json();
         if (!res.ok) throw new Error(data.message || 'Request failed');
 
@@ -200,7 +206,9 @@
     }
 
     els.searchBtn.addEventListener('click', search);
-    els.username.addEventListener('keydown', (e) => { if (e.key === 'Enter') search(); });
+    els.username.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') search();
+    });
   </script>
 </body>
 </html>

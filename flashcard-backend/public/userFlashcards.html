@@ -711,8 +711,22 @@ defInput.style.resize   = 'none';
             saveDraft();
 
         </script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
 
-
-
-    </body>
+         // 🧠 Listen for delete events and remove set/card from DOM
+        socket.on('item-deleted', ({ type, id }) => {
+            if (type === 'set') {
+                const allSets = document.querySelectorAll('#savedSets .flashcard');
+                allSets.forEach(div => {
+                    const trashBtn = div.querySelector('.set-trash-btn');
+                    if (trashBtn?.getAttribute('onclick')?.includes(id)) {
+                        div.remove();
+                    }
+                });
+            }
+         });
+    </script>
+ </body>
 </html>
