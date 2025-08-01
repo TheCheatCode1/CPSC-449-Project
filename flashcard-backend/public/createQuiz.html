@@ -132,6 +132,7 @@
 
   <div id="main-content">
     <h2>Create a New Quiz</h2>
+    
 
     <form id="quizForm">
       <input type="text" id="quizTitle" placeholder="Quiz Title" required />
@@ -143,6 +144,21 @@
       <button type="button" onclick="submitQuiz()">Save Quiz</button>
 
     </form>
+
+    <h3>Take a Quiz via QuizAPI</h3>
+<select id="quizTopic">
+  <option value="">Select a topic</option>
+  <option value="javascript">JavaScript</option>
+  <option value="html">HTML</option>
+  <option value="css">CSS</option>
+  <option value="linux">Linux</option>
+  <option value="bash">Bash</option>
+  <option value="code">Code</option>
+</select>
+
+<button onclick="fetchFromQuizAPI()">Load Quiz</button>
+<div id="quizApiResult"></div>
+
 
     <h3>Saved Quizzes</h3>
 <div id="savedQuizzes"></div>
@@ -378,6 +394,101 @@ deleteBtn.onclick = async () => {
   });
 </script>
 
+<script>
+  async function fetchFromQuizAPI() {
+    const topic = document.getElementById('quizTopic').value.trim();
+    const resultDiv = document.getElementById('quizApiResult');
+    if (!topic) return alert('Enter a quiz topic');
+
+    resultDiv.innerHTML = '⏳ Loading...';
+
+    try {
+const res = await fetch(`https://quizapi.io/api/v1/questions?limit=5&tags=${encodeURIComponent(topic)}`, {
+  headers: {
+    'X-Api-Key': 'hq77KpOf32Y2h8unkR3dKuMATMb6MDhy555AgOoV'
+  }
+});
+
+
+      const questions = await res.json();
+
+      if (!questions.length) {
+        resultDiv.innerHTML = '❌ No questions found.';
+        return;
+      }
+
+      resultDiv.innerHTML = '';
+      questions.forEach((q, i) => {
+        const container = document.createElement('div');
+        container.className = 'question-block';
+        container.innerHTML = `
+          <strong>${i + 1}. ${q.question}</strong><br/>
+          ${Object.entries(q.answers)
+            .filter(([key, val]) => val !== null)
+            .map(([key, val]) => `<label><input type="radio" name="q${i}" value="${key}"> ${val}</label><br/>`)
+            .join('')}
+        `;
+        resultDiv.appendChild(container);
+      });
+
+      // Add save button
+      const saveBtn = document.createElement('button');
+      saveBtn.textContent = 'Save This Quiz';
+      saveBtn.onclick = () => saveQuizApiResults(questions, topic);
+      resultDiv.appendChild(saveBtn);
+
+    } catch (err) {
+      console.error(err);
+      resultDiv.innerHTML = '❌ Error fetching quiz.';
+    }
+  }
+
+  async function saveQuizApiResults(questions, topic) {
+    const token = sessionStorage.getItem('token');
+
+    const formatted = questions.map(q => {
+      const options = Object.values(q.answers).filter(v => v);
+      const correctLetter = Object.entries(q.correct_answers).find(([key, val]) => val === 'true')?.[0]?.slice(-1);
+      const correctIndex = ['A', 'B', 'C', 'D', 'E', 'F'].indexOf(correctLetter?.toUpperCase());
+      const correctAnswer = options[correctIndex];
+
+      return {
+        question: q.question,
+        options,
+        correctAnswer
+      };
+    });
+
+    const body = {
+      title: `QuizAPI - ${topic}`,
+      description: `Imported quiz on ${topic} from QuizAPI`,
+      questions: formatted
+    };
+
+    try {
+      const res = await fetch('/api/quizzes', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(body)
+      });
+
+      const result = await res.json();
+      if (res.ok) {
+        alert('✅ Quiz saved successfully!');
+        loadSavedQuizzes();
+      } else {
+        console.error(result);
+        alert('❌ Save failed');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('❌ Error saving quiz');
+    }
+  }
+</script>
 
 
   </body>

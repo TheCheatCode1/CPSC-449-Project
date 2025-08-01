@@ -3,6 +3,8 @@ const Quiz = require('../models/Quiz');
 const auth = require('../middleware/authMiddleware');
 const roleAuth = require('../middleware/roleMiddleware');
 const router = express.Router();
+const axios = require('axios');
+
 
 // Create quiz
 router.post('/', auth, async (req, res) => {
@@ -51,6 +53,34 @@ router.delete('/:id', auth, async (req, res) => {
 });
 
 
+// Fetch quiz questions from QuizAPI
+router.get('/external/:subject', auth, async (req, res) => {
+  const subject = req.params.subject;
+  const apiKey = process.env.QUIZ_API_KEY;
+
+  try {
+    const response = await axios.get('https://quizapi.io/api/v1/questions', {
+      headers: { 'X-Api-Key': apiKey },
+      params: {
+        category: subject,
+        limit: 5 // or adjust based on what you want
+      }
+    });
+
+    const data = response.data.map(q => ({
+      question: q.question,
+      options: Object.values(q.answers).filter(Boolean),
+      correctAnswer: q.correct_answers[q.correct_answer_key]
+        ? q.correct_answer_key.replace('_correct', '')
+        : null
+    }));
+
+    res.json(data);
+  } catch (err) {
+    console.error('QuizAPI error:', err.message);
+    res.status(500).json({ error: 'Failed to fetch quiz data' });
+  }
+});
 
 
 

@@ -38,6 +38,8 @@ app.use('/api/auth', authRoutes);
 app.use('/api/flashcards', flashcardRoutes);
 app.use('/api/quizzes', quizRoutes);
 app.use('/admin', adminRoutes);
+app.use('/api/quiz', require('./routes/quizRoutes'));
+
 
 // ✅ Health Check Route
 app.get('/api/health', (req, res) => {
