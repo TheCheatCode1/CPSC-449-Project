@@ -19,5 +19,3 @@
 - GET /api/auth/users
 
 
-# CREATE A .env file inside of the <CPSC-449-Project\flashcard-backend>
-paste MONGO_URI=(URI_FROM_MONGODB_COMPASS)/flashcardApp
