@@ -340,20 +340,44 @@ deleteBtn.onclick = async () => {
     console.log('✅ WebSocket connected');
   });
 
+  // 🗑️ Handle deletions
   socket.on('item-deleted', ({ type, id }) => {
-    if (type === 'quiz') {
-      document.querySelectorAll('#savedQuizzes > div').forEach(div => {
-        const quizId = div.getAttribute('data-id');
-        if (quizId === id) {
-          console.log(`🧹 Removing quiz ID ${id}`);
-          div.remove();
-        }
-      });
+    console.log(`🧹 Delete broadcast: ${type} - ${id}`);
+    try {
+      if (type === 'quiz') {
+        document.querySelectorAll('#savedQuizzes > div').forEach(div => {
+          if (div.getAttribute('data-id') === id) {
+            div.remove();
+          }
+        });
+      }
+    } catch (err) {
+      console.warn('Non-fatal error during delete:', err);
+    }
+  });
+
+  // ✏️ Handle edits
+  socket.on('item-edited', ({ type, id, updates }) => {
+    console.log(`✏️ Edit broadcast: ${type} - ${id}`, updates);
+    try {
+      if (type === 'quiz' && updates.title) {
+        document.querySelectorAll('#savedQuizzes > div').forEach(div => {
+          if (div.getAttribute('data-id') === id) {
+            // 👇 Either replace content or just update title if DOM structure allows
+            const strongTitle = div.querySelector('strong');
+            if (strongTitle) strongTitle.textContent = updates.title;
+
+            const desc = div.querySelector('p');
+            if (desc && updates.description) desc.textContent = updates.description;
+          }
+        });
+      }
+    } catch (err) {
+      console.warn('Non-fatal error during edit:', err);
     }
   });
 </script>
 
-</script>
 
 
   </body>

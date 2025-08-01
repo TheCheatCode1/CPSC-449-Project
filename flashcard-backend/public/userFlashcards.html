@@ -625,18 +625,20 @@ async function loadSavedSets() {
     sets.forEach(set => {
       const div = document.createElement('div');
       div.className = 'flashcard';
-      div.innerHTML = `
-        <button 
-          class="set-trash-btn" 
-          title="Delete set" 
-          style="float:right; background:none; border:none; cursor:pointer;"
-          onclick="deleteSet('${set._id}')"
-        >🗑️</button>
-        <strong>${set.title}</strong><br>
-        ${set.description}<br>
-        <a href="/viewSet.html?id=${set._id}">View Set</a>
-        <button onclick="loadSetToStudy('${set._id}')">Study Set</button>
-      `;
+      div.setAttribute('data-id', set._id); // Add this line
+div.innerHTML = `
+  <button 
+    class="set-trash-btn" 
+    title="Delete set" 
+    style="float:right; background:none; border:none; cursor:pointer;"
+    onclick="deleteSet('${set._id}')"
+  >🗑️</button>
+  <div class="set-title">${set.title}</div>
+  ${set.description}<br>
+  <a href="/viewSet.html?id=${set._id}">View Set</a>
+  <button onclick="loadSetToStudy('${set._id}')">Study Set</button>
+`;
+
       container.appendChild(div);
     });
   } catch (err) {
@@ -728,28 +730,66 @@ async function loadSavedSets() {
             saveDraft();
 
         </script>
-    <script src="/socket.io/socket.io.js"></script>
-    <script>
-        const socket = io();
+  
+<!-- Only one socket.io script -->
+<script src="/socket.io/socket.io.js"></script>
+<script>
+  const socket = io();
 
-         // 🧠 Listen for delete events and remove set/card from DOM
-       socket.on('item-deleted', ({ type, id }) => {
-  console.log(`🧹 Received delete broadcast: ${type} - ${id}`);
-  try {
-    if (type === 'set') {
-      document.querySelectorAll('#savedSets .flashcard').forEach(div => {
-        const trashBtn = div.querySelector('.set-trash-btn');
-        if (trashBtn?.getAttribute('onclick')?.includes(id)) {
-          div.remove();
-        }
-      });
+  socket.on('connect', () => {
+    console.log('✅ WebSocket connected');
+  });
+
+  socket.on('item-deleted', ({ type, id }) => {
+    console.log(`🧹 Delete broadcast: ${type} - ${id}`);
+    try {
+      if (type === 'set') {
+        document.querySelectorAll('#savedSets .flashcard').forEach(div => {
+          const trashBtn = div.querySelector('.set-trash-btn');
+          if (trashBtn?.getAttribute('onclick')?.includes(id)) {
+            div.remove();
+          }
+        });
+      }
+      if (type === 'quiz') {
+        document.querySelectorAll('#savedQuizzes > div').forEach(div => {
+          if (div.getAttribute('data-id') === id) {
+            div.remove();
+          }
+        });
+      }
+    } catch (err) {
+      console.warn('Non-fatal error during delete:', err);
     }
-    // If you add quiz/card UI later, handle them similarly.
-  } catch (err) {
-    console.warn('Non-fatal error handling deletion event:', err);
-  }
-});
+  });
 
-    </script>
+  socket.on('item-edited', ({ type, id, updates }) => {
+    console.log(`✏️ Edit broadcast: ${type} - ${id}`, updates);
+    try {
+      if (type === 'set' && updates.title) {
+        document.querySelectorAll('#savedSets .flashcard').forEach(div => {
+          const trashBtn = div.querySelector('.set-trash-btn');
+          if (trashBtn?.getAttribute('onclick')?.includes(id)) {
+            const title = div.querySelector('.set-title');
+            if (title) title.textContent = updates.title;
+          }
+        });
+      }
+
+      if (type === 'quiz' && updates.title) {
+        document.querySelectorAll('#savedQuizzes > div').forEach(div => {
+          if (div.getAttribute('data-id') === id) {
+            const title = div.querySelector('.quiz-title');
+            if (title) title.textContent = updates.title;
+          }
+        });
+      }
+    } catch (err) {
+      console.warn('Non-fatal error during edit:', err);
+    }
+  });
+</script>
+
+    
  </body>
 </html>

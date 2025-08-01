@@ -78,18 +78,33 @@
       }
     })();
 
-    function itemRow(label, onDelete) {
-      const row = document.createElement('div');
-      row.className = 'item';
-      const left = document.createElement('div');
-      left.innerHTML = label;
-      const delBtn = document.createElement('button');
-      delBtn.textContent = 'Delete';
-      delBtn.addEventListener('click', onDelete);
-      row.appendChild(left);
-      row.appendChild(delBtn);
-      return row;
-    }
+function itemRow(label, onDelete, onEdit) {
+  const row = document.createElement('div');
+  row.className = 'item';
+
+  const left = document.createElement('div');
+  left.innerHTML = label;
+
+  const buttonContainer = document.createElement('div');
+
+  const delBtn = document.createElement('button');
+  delBtn.textContent = 'Delete';
+  delBtn.addEventListener('click', onDelete);
+
+  const editBtn = document.createElement('button');
+  editBtn.textContent = 'Edit';
+  editBtn.style.marginLeft = '6px';
+  editBtn.addEventListener('click', onEdit);
+
+  buttonContainer.appendChild(editBtn);
+  buttonContainer.appendChild(delBtn);
+
+  row.appendChild(left);
+  row.appendChild(buttonContainer);
+
+  return row;
+}
+
 
     async function deleteItem(username, type, id) {
       if (!confirm(`Delete this ${type}?`)) return;
@@ -111,6 +126,47 @@
         els.status.textContent = `Error: ${err.message}`;
       }
     }
+
+    async function editItem(username, type, item) {
+  const updated = { ...item };
+
+  if (type === 'set') {
+    const newTitle = prompt('Edit Set Title:', item.title);
+    if (!newTitle || newTitle === item.title) return;
+    updated.title = newTitle;
+  }
+
+  if (type === 'card') {
+    const newTerm = prompt('Edit Term:', item.term);
+    const newDef = prompt('Edit Definition:', item.definition);
+    if (!newTerm || !newDef || (newTerm === item.term && newDef === item.definition)) return;
+    updated.term = newTerm;
+    updated.definition = newDef;
+  }
+
+  if (type === 'quiz') {
+    const newTitle = prompt('Edit Quiz Title:', item.title);
+    const newDesc = prompt('Edit Quiz Description:', item.description);
+    if (!newTitle || !newDesc || (newTitle === item.title && newDesc === item.description)) return;
+    updated.title = newTitle;
+    updated.description = newDesc;
+  }
+
+  try {
+    const res = await fetch(`/admin/edit/${username}/${type}/${item._id}`, {
+      method: 'PUT',
+      headers: authHeaders(),
+      body: JSON.stringify(updated)
+    });
+    const result = await res.json();
+    if (!res.ok) throw new Error(result.message || 'Edit failed');
+    els.status.textContent = '✅ Updated successfully';
+    await search();
+  } catch (err) {
+    els.status.textContent = `❌ Edit failed: ${err.message}`;
+  }
+}
+
 
     function renderCounts(counts, user) {
       els.counts.textContent = '';
@@ -137,7 +193,12 @@
           <div class="muted">_id: ${s._id}</div>
           <div class="muted">cards: ${s.cardsCount ?? 0}</div></div>
         `;
-        const row = itemRow(html, () => deleteItem(username, 'set', s._id));
+        const row = itemRow(
+  html,
+  () => deleteItem(username, 'set', s._id),
+  () => editItem(username, 'set', s)
+);
+
         els.sets.appendChild(row);
       });
     }
@@ -153,7 +214,12 @@
           <div><strong>${c.term || '(no term)'}</strong> – ${c.definition || '(no definition)'}
           <div class="muted">_id: ${c._id} &nbsp; | &nbsp; setId: ${c.setId}</div></div>
         `;
-        const row = itemRow(html, () => deleteItem(username, 'card', c._id));
+        const row = itemRow(
+  html,
+  () => deleteItem(username, 'card', c._id),
+  () => editItem(username, 'card', c)
+);
+
         els.cards.appendChild(row);
       });
     }
@@ -169,7 +235,12 @@
           <div><strong>${q.title || '(untitled quiz)'}</strong>
           <div class="muted">_id: ${q._id}</div></div>
         `;
-        const row = itemRow(html, () => deleteItem(username, 'quiz', q._id));
+        const row = itemRow(
+  html,
+  () => deleteItem(username, 'quiz', q._id),
+  () => editItem(username, 'quiz', q)
+);
+
         els.quizzes.appendChild(row);
       });
     }
@@ -209,6 +280,61 @@
     els.username.addEventListener('keydown', (e) => {
       if (e.key === 'Enter') search();
     });
+
+    socket.on('item-edited', ({ type, id, updates }) => {
+  console.log(`✏️ Realtime edit for ${type} - ${id}`, updates);
+
+  const container = type === 'set' ? els.sets :
+                    type === 'card' ? els.cards :
+                    type === 'quiz' ? els.quizzes : null;
+
+  if (!container) return;
+
+  const items = container.querySelectorAll('.item');
+  items.forEach(row => {
+    const idMatch = row.innerHTML.includes(id);
+    if (!idMatch) return;
+
+    // Update inner HTML based on type and new values
+    if (type === 'set' && updates.title) {
+      const titleNode = row.querySelector('strong');
+      if (titleNode) titleNode.textContent = updates.title;
+    }
+
+    if (type === 'card' && updates.term && updates.definition) {
+      const strong = row.querySelector('strong');
+      const muted = row.querySelector('.muted');
+      if (strong && muted) {
+        strong.textContent = updates.term;
+        muted.previousSibling.textContent = ` – ${updates.definition}`;
+      }
+    }
+
+    if (type === 'quiz' && updates.title) {
+      const titleNode = row.querySelector('strong');
+      if (titleNode) titleNode.textContent = updates.title;
+    }
+  });
+});
+
+socket.on('item-deleted', ({ type, id }) => {
+  console.log(`🧹 Realtime delete for ${type} - ${id}`);
+
+  const container = type === 'set' ? els.sets :
+                    type === 'card' ? els.cards :
+                    type === 'quiz' ? els.quizzes : null;
+
+  if (!container) return;
+
+  const items = container.querySelectorAll('.item');
+  items.forEach(row => {
+    if (row.innerHTML.includes(id)) {
+      row.remove();
+    }
+  });
+});
+
+
   </script>
 </body>
 </html>

@@ -320,21 +320,42 @@ document.getElementById('flashcard').textContent = showingFront ? currentCard.te
 </script>
 
 
-</body>
-
-<!-- Real-time WebSocket listener for set deletion -->
 <script src="/socket.io/socket.io.js"></script>
 <script>
   const socket = io();
+
+  socket.on('connect', () => {
+    console.log('✅ WebSocket connected');
+  });
+
+  // 🗑️ Handle deletions
   socket.on('item-deleted', ({ type, id }) => {
-    if (type === 'set') {
-      // Remove set from UI or redirect
-      document.querySelectorAll(`#savedSets .flashcard`).forEach(div => {
-        if (div.innerHTML.includes(id)) div.remove();
-      });
+    const currentSetId = new URLSearchParams(window.location.search).get('id');
+    if (type === 'set' && id === currentSetId) {
+      alert('❌ This set was deleted.');
+      window.location.href = '/userFlashcards.html';
+    }
+  });
+
+  // ✏️ Handle edits
+  socket.on('item-edited', ({ type, id, updates }) => {
+    const currentSetId = new URLSearchParams(window.location.search).get('id');
+    if (type === 'set' && id === currentSetId && updates.title) {
+      const titleElement = document.getElementById('setTitle');
+      if (titleElement) titleElement.textContent = updates.title;
+    }
+
+    if (type === 'card') {
+      const index = cards.findIndex(card => card._id === id);
+      if (index !== -1) {
+        if (updates.term) cards[index].term = updates.term;
+        if (updates.definition) cards[index].definition = updates.definition;
+        if (index === currentIndex) displayCard(); // refresh current card
+      }
     }
   });
 </script>
 
 
+</body>
 </html>

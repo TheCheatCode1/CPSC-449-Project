@@ -11,4 +11,7 @@ router.get('/user-data', auth, roleAuth('admin'), adminController.getUserData);
 // Delete a set, card, or quiz by ID
 router.delete('/delete/:username/:type/:id', auth, roleAuth('admin'), adminController.deleteById);
 
+router.put('/edit/:username/:type/:id', auth, roleAuth('admin'), adminController.editById);
+
+
 module.exports = router;
