@@ -254,7 +254,7 @@
 
 
     <script>
-        const username = localStorage.getItem('username') || 'User';
+        const username = sessionStorage.getItem('username') || 'User';
 
         const greetings = [
             "Hello",
@@ -314,7 +314,7 @@
         document.getElementById('welcome').textContent = `${randomGreeting}, ${username}`;
 
 
-        const role = localStorage.getItem('role');
+        const role = sessionStorage.getItem('role');
         if (role !== 'user') {
             alert('Unauthorized access. Redirecting to login.');
             window.location.href = '/';
@@ -334,7 +334,7 @@
       sb.addEventListener('mouseleave', ()=>sb.classList.remove('expanded'));
       document.getElementById('logoutButton')
         .addEventListener('click', ()=>{
-          localStorage.clear();
+          sessionStorage.clear();
           location.href = '/';
         });
     });
@@ -353,7 +353,7 @@
 async function loadDashboard() {
   // Load recent viewed sets
   try {
-    const token = localStorage.getItem('token');
+    const token = sessionStorage.getItem('token');
     const res = await fetch('/api/flashcards/sets', {
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -369,7 +369,7 @@ async function loadDashboard() {
     const recent = document.getElementById('recentSetsList');
     if (recent) {
       recent.innerHTML = '';
-      const viewedIds = JSON.parse(localStorage.getItem('recentViewedSets') || '[]');
+      const viewedIds = JSON.parse(sessionStorage.getItem('recentViewedSets') || '[]');
       if (viewedIds.length === 0) {
         recent.innerHTML = `<p style="color:#444;">You haven’t viewed any sets yet.</p>`;
       } else {
@@ -408,7 +408,7 @@ async function loadDashboard() {
 
   // Load quizzes
   try {
-    const token = localStorage.getItem('token');
+    const token = sessionStorage.getItem('token');
     const quizRes = await fetch('/api/quizzes', {
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -479,7 +479,7 @@ input.addEventListener('input', debounce(async e => {
     return;
   }
   try {
-    const token = localStorage.getItem('token');
+    const token = sessionStorage.getItem('token');
     const res = await fetch(`/api/flashcards/sets?search=${encodeURIComponent(q)}`, {
       headers: {
         'Authorization': `Bearer ${token}`,

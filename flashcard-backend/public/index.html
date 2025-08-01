@@ -208,9 +208,9 @@
 
         const data = await res.json();
         if (res.ok && data && data.token && data.user?.role) {
-          localStorage.setItem('token', data.token);
-          localStorage.setItem('role', data.user.role);
-          localStorage.setItem('username', data.user.username);
+          sessionStorage.setItem('token', data.token);
+          sessionStorage.setItem('role', data.user.role);
+          sessionStorage.setItem('username', data.user.username);
 
             alert(`Logged in as ${data.user.role}`);
             if (data.user.role === 'admin') {

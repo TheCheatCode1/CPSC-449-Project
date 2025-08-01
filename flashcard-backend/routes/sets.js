@@ -1,5 +1,5 @@
 const express = require('express');
-const Set = require('../models/set'); // Capital S to match filename
+const Set = require('../models/set');
 const auth = require('../middleware/authMiddleware');
 const router = express.Router();
 
@@ -32,5 +32,25 @@ router.get('/', auth, async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+
+// DELETE set by ID
+router.delete('/:id', auth, async (req, res) => {
+  try {
+    const set = await Set.findById(req.params.id);
+    if (!set) return res.status(404).json({ error: 'Set not found' });
+
+    // 🔐 Only allow the user who owns the set OR an admin
+    if (set.userId.toString() !== req.user._id.toString() && req.user.role !== 'admin') {
+      return res.status(403).json({ error: 'Forbidden: Not your set' });
+    }
+
+    await Set.findByIdAndDelete(req.params.id);
+    res.status(200).json({ message: 'Set deleted' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Delete failed' });
+  }
+});
+
 
 module.exports = router;

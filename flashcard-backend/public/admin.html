@@ -60,13 +60,13 @@
     function authHeaders() {
       return {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('token') || ''}`
+        'Authorization': `Bearer ${sessionStorage.getItem('token') || ''}`
       };
     }
 
     (function guard() {
-      const role = localStorage.getItem('role');
-      const token = localStorage.getItem('token');
+      const role = sessionStorage.getItem('role');
+      const token = sessionStorage.getItem('token');
       if (!token) {
         alert('Please log in.');
         window.location.href = '/login.html';

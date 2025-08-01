@@ -323,15 +323,15 @@
 
         <script>
             // Authentication check
-            const token = localStorage.getItem('token');
-            const role = localStorage.getItem('role');
+            const token = sessionStorage.getItem('token');
+            const role = sessionStorage.getItem('role');
             if (!token || role !== 'user') {
                 alert('Please log in to access this page.');
                 window.location.href = '/';
             }
         
             function loadDraft() {
-                const draft = JSON.parse(localStorage.getItem('flashcardDraft') || 'null');
+                const draft = JSON.parse(sessionStorage.getItem('flashcardDraft') || 'null');
                 if (!draft) return;
 
     document.getElementById('setTitle').value       = draft.title || '';
@@ -354,7 +354,12 @@
 
 
             // Check if user is admin and load appropriate sidebar
-            const sidebarPath = role === 'admin' ? '/adminSidebar.html' : '/sidebar.html';
+            if (role !== 'user') {
+                alert('Admins must use the admin panel.');
+                window.location.href = '/admin.html';
+                }
+                const sidebarPath = '/sidebar.html'; // only allow user sidebar here
+
             
             fetch(sidebarPath)
             .then(response => response.text())
@@ -370,7 +375,7 @@
                     const logoutButton = document.getElementById('logoutButton');
                     if (logoutButton) {
                         logoutButton.addEventListener('click', () => {
-                            localStorage.clear();
+                            sessionStorage.clear();
                             window.location.href = '/';
                         });
                     }
@@ -457,7 +462,7 @@ defInput.style.resize   = 'none';
 
                     let data;
                     try {
-                        const token = localStorage.getItem('token');
+                        const token = sessionStorage.getItem('token');
                         console.log('Token for lookup:', token ? 'Present' : 'Missing');
                         if (!token) {
                             alert('Please log in to use auto-fill feature.');
@@ -509,7 +514,7 @@ defInput.style.resize   = 'none';
 
 
             async function saveSet() {
-                const token = localStorage.getItem('token');
+                const token = sessionStorage.getItem('token');
   const title       = document.getElementById('setTitle').value.trim();
                 const description = document.getElementById('setDescription').value;
                 // Gather all card rows
@@ -582,7 +587,7 @@ defInput.style.resize   = 'none';
 
             async function deleteSet(setId) {
                 if (!confirm('Are you sure you want to delete this flashcard set?')) return;
-                const token = localStorage.getItem('token');
+                const token = sessionStorage.getItem('token');
                 const res = await fetch(`/api/flashcards/sets/${setId}`, {
                     method: 'DELETE',
                     headers: {
@@ -597,37 +602,49 @@ defInput.style.resize   = 'none';
                 loadSavedSets();
             }
 
-            async function loadSavedSets() {
-                const token = localStorage.getItem('token');
-                const res = await fetch('/api/flashcards/sets', {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                        'Content-Type': 'application/json',
-                    },
-                });
-                const sets = await res.json();
+async function loadSavedSets() {
+  const token = sessionStorage.getItem('token');
+  try {
+    const res = await fetch('/api/flashcards/sets', {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+    });
 
-                const container = document.getElementById('savedSets');
-                container.innerHTML = '';
-  sets.forEach(set => {
-                    const div = document.createElement('div');
-                    div.className = 'flashcard';
-                    // add a trash button in top-right
-                    div.innerHTML = `
-      <button 
-        class="set-trash-btn" 
-        title="Delete set" 
-        style="float:right; background:none; border:none; cursor:pointer;"
-        onclick="deleteSet('${set._id}')"
-      >🗑️</button>
-      <strong>${set.title}</strong><br>
-      ${set.description}<br>
-      <a href="/viewSet.html?id=${set._id}">View Set</a>
-      <button onclick="loadSetToStudy('${set._id}')">Study Set</button>
-    `;
-                    container.appendChild(div);
-                });
-            }
+    // New: if not authorized, don't clear storage
+    if (res.status === 401) {
+      console.warn('User token unauthorized when loading sets — skipping reload');
+      return; // Don't logout, just skip
+    }
+
+    const sets = await res.json();
+
+    const container = document.getElementById('savedSets');
+    container.innerHTML = '';
+    sets.forEach(set => {
+      const div = document.createElement('div');
+      div.className = 'flashcard';
+      div.innerHTML = `
+        <button 
+          class="set-trash-btn" 
+          title="Delete set" 
+          style="float:right; background:none; border:none; cursor:pointer;"
+          onclick="deleteSet('${set._id}')"
+        >🗑️</button>
+        <strong>${set.title}</strong><br>
+        ${set.description}<br>
+        <a href="/viewSet.html?id=${set._id}">View Set</a>
+        <button onclick="loadSetToStudy('${set._id}')">Study Set</button>
+      `;
+      container.appendChild(div);
+    });
+  } catch (err) {
+    console.error('Failed to load sets:', err);
+    // Don't log the user out
+  }
+}
+
 
             loadSavedSets();
         loadDraft();       // rebuild any in‑progress cards
@@ -661,13 +678,13 @@ defInput.style.resize   = 'none';
                     term: w.querySelector('.front').value,
             definition:  w.querySelector('.back').value
                 }));
-                localStorage.setItem('flashcardDraft', JSON.stringify({ title, description, cards }));
+                sessionStorage.setItem('flashcardDraft', JSON.stringify({ title, description, cards }));
             }
 
 
             // Wipe the draft once the set is actually saved
             function clearDraft() {
-                localStorage.removeItem('flashcardDraft');
+                sessionStorage.removeItem('flashcardDraft');
             }
 
 
@@ -716,17 +733,23 @@ defInput.style.resize   = 'none';
         const socket = io();
 
          // 🧠 Listen for delete events and remove set/card from DOM
-        socket.on('item-deleted', ({ type, id }) => {
-            if (type === 'set') {
-                const allSets = document.querySelectorAll('#savedSets .flashcard');
-                allSets.forEach(div => {
-                    const trashBtn = div.querySelector('.set-trash-btn');
-                    if (trashBtn?.getAttribute('onclick')?.includes(id)) {
-                        div.remove();
-                    }
-                });
-            }
-         });
+       socket.on('item-deleted', ({ type, id }) => {
+  console.log(`🧹 Received delete broadcast: ${type} - ${id}`);
+  try {
+    if (type === 'set') {
+      document.querySelectorAll('#savedSets .flashcard').forEach(div => {
+        const trashBtn = div.querySelector('.set-trash-btn');
+        if (trashBtn?.getAttribute('onclick')?.includes(id)) {
+          div.remove();
+        }
+      });
+    }
+    // If you add quiz/card UI later, handle them similarly.
+  } catch (err) {
+    console.warn('Non-fatal error handling deletion event:', err);
+  }
+});
+
     </script>
  </body>
 </html>

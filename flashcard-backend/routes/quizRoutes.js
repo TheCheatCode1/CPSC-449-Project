@@ -29,7 +29,6 @@ router.delete('/:id', auth, async (req, res) => {
       return res.status(404).json({ error: 'Quiz not found' });
     }
 
-    // Allow if admin OR quiz belongs to user
     const isAdmin = req.user.role === 'admin';
     const isOwner = quiz.userId.toString() === req.user._id.toString();
 
@@ -38,11 +37,20 @@ router.delete('/:id', auth, async (req, res) => {
     }
 
     await Quiz.findByIdAndDelete(req.params.id);
+
+    // ⬇️ Emit WebSocket event
+    const io = req.app.get('io');
+    if (io) {
+      io.emit('item-deleted', { type: 'quiz', id: quiz._id.toString() });
+    }
+
     res.json({ message: 'Quiz deleted successfully' });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
+
+
 
 
 

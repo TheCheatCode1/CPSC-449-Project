@@ -44,7 +44,14 @@ router.delete('/admin/sets/:id', auth, roleAuth('admin'), async (req, res) => {
 
     await Card.deleteMany({ setId: id });
 
-    res.json({ message: 'Set and all its cards deleted successfully' });
+// Emit WebSocket event to notify connected clients
+req.app.get('io').emit('item-deleted', {
+  type: 'set',
+  id
+});
+
+res.json({ message: 'Set and all its cards deleted successfully' });
+
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -116,20 +123,24 @@ router.delete('/sets/:id', auth, async (req, res) => {
       return res.status(404).json({ error: 'Set not found' });
     }
 
-    if (req.user.role !== 'admin' && set.userId .toString() !== req.user._id.toString()) {
+    if (req.user.role !== 'admin' && set.userId.toString() !== req.user._id.toString()) {
       return res.status(403).json({ error: 'You can only delete your own sets' });
     }
 
     // Remove all cards belonging to that set
     await Card.deleteMany({ setId: id });
-    // Remove the set itself
     await Set.findByIdAndDelete(id);
+
+    // 🔥 WebSocket broadcast
+    req.app.get('io').emit('item-deleted', { type: 'set', id });
+
     res.json({ message: 'Set deleted' });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: err.message });
   }
 });
+
 
 
 // Create a new card in a set

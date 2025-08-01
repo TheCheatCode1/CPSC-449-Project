@@ -156,7 +156,7 @@
     }
 
     try {
-      const token = localStorage.getItem('token');
+      const token = sessionStorage.getItem('token');
       const setsRes = await fetch(`/api/flashcards/sets`, {
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -164,9 +164,17 @@
         }
       });
       
-      if (!setsRes.ok) {
-        throw new Error(`HTTP ${setsRes.status}: ${setsRes.statusText}`);
-      }
+      if (cardsRes.status === 404) {
+  document.getElementById('setTitle').textContent = 'This flashcard set has been deleted.';
+  document.getElementById('flashcard').textContent = 'This set no longer exists.';
+  document.getElementById('counter').textContent = '0/0';
+  return;
+} else if (!cardsRes.ok) {
+  console.error(`Failed to load cards: ${cardsRes.statusText}`);
+  document.getElementById('setTitle').textContent = 'Error loading cards.';
+  return;
+}
+
       
       const sets = await setsRes.json();
       
@@ -183,12 +191,12 @@
 
       document.getElementById('setTitle').textContent = selected.title;
 
-      // Track this set as recently viewed in localStorage
-      const viewedIds = JSON.parse(localStorage.getItem('recentViewedSets') || '[]');
+      // Track this set as recently viewed in sessionStorage
+      const viewedIds = JSON.parse(sessionStorage.getItem('recentViewedSets') || '[]');
       if (!viewedIds.includes(setId)) {
         viewedIds.unshift(setId); // Add to beginning
         viewedIds.splice(10); // Keep only last 10
-        localStorage.setItem('recentViewedSets', JSON.stringify(viewedIds));
+        sessionStorage.setItem('recentViewedSets', JSON.stringify(viewedIds));
       }
 
       const cardsRes = await fetch(`/api/flashcards/cards/by-set/${setId}`, {
@@ -266,7 +274,7 @@ document.getElementById('flashcard').textContent = showingFront ? currentCard.te
 
 <script>
   // Check if user is admin and load appropriate sidebar
-  const role = localStorage.getItem('role');
+  const role = sessionStorage.getItem('role');
   const sidebarPath = role === 'admin' ? '/adminSidebar.html' : '/sidebar.html';
   
   fetch(sidebarPath)
@@ -283,7 +291,7 @@ document.getElementById('flashcard').textContent = showingFront ? currentCard.te
       const logoutButton = document.getElementById('logoutButton');
       if (logoutButton) {
         logoutButton.addEventListener('click', () => {
-          localStorage.clear();
+          sessionStorage.clear();
           window.location.href = '/';
         });
       }
@@ -292,7 +300,7 @@ document.getElementById('flashcard').textContent = showingFront ? currentCard.te
   // Move this logic inside a function to ensure it only runs when setId is valid
   function saveViewedSet(id) {
     if (!id) return;
-    const viewed = JSON.parse(localStorage.getItem('recentViewedSets') || '[]');
+    const viewed = JSON.parse(sessionStorage.getItem('recentViewedSets') || '[]');
 
     // Move to front, no duplicates
     const index = viewed.indexOf(id);
@@ -302,7 +310,7 @@ document.getElementById('flashcard').textContent = showingFront ? currentCard.te
     // Limit to 5
     while (viewed.length > 5) viewed.pop();
 
-    localStorage.setItem('recentViewedSets', JSON.stringify(viewed));
+    sessionStorage.setItem('recentViewedSets', JSON.stringify(viewed));
   }
 
   // Wait until setId is confirmed and valid
@@ -313,4 +321,20 @@ document.getElementById('flashcard').textContent = showingFront ? currentCard.te
 
 
 </body>
+
+<!-- Real-time WebSocket listener for set deletion -->
+<script src="/socket.io/socket.io.js"></script>
+<script>
+  const socket = io();
+  socket.on('item-deleted', ({ type, id }) => {
+    if (type === 'set') {
+      // Remove set from UI or redirect
+      document.querySelectorAll(`#savedSets .flashcard`).forEach(div => {
+        if (div.innerHTML.includes(id)) div.remove();
+      });
+    }
+  });
+</script>
+
+
 </html>

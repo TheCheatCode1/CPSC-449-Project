@@ -142,7 +142,7 @@ input, select {
 
   <script>
     // redirect if not a 'user'
-    const role = localStorage.getItem('role');
+    const role = sessionStorage.getItem('role');
     if (role !== 'user') {
       alert('Unauthorized access. Redirecting to login.');
       window.location.href = '/';
@@ -164,7 +164,7 @@ if (sidebar) {
 
         document.getElementById('logoutButton')
                 .addEventListener('click', ()=> {
-          localStorage.clear();
+          sessionStorage.clear();
           window.location.href = '/';
         });
       });
@@ -187,7 +187,7 @@ if (sidebar) {
       loading.style.display = 'block';
 
       try {
-        const token = localStorage.getItem('token');
+        const token = sessionStorage.getItem('token');
         const res = await fetch('/api/flashcards/ai-generate', {
           method: 'POST',
           headers: {
@@ -238,8 +238,8 @@ if (sidebar) {
       btn.disabled = true;
       btn.textContent = 'Saving...';
       try {
-        const token = localStorage.getItem('token');
-        const user = localStorage.getItem('username');
+        const token = sessionStorage.getItem('token');
+        const user = sessionStorage.getItem('username');
         let r = await fetch('/api/flashcards/sets', {
           method:'POST',
           headers:{
@@ -249,7 +249,7 @@ if (sidebar) {
           body: JSON.stringify({
             title: `AI Generated - ${topic}`,
             description: `AI-generated flashcards for ${topic}`,
-            createdBy: localStorage.getItem('userId')
+            createdBy: sessionStorage.getItem('userId')
           })
         });
         if (!r.ok) throw new Error('Set creation failed');
