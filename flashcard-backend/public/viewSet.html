@@ -163,6 +163,13 @@
           'Content-Type': 'application/json'
         }
       });
+
+            const cardsRes = await fetch(`/api/flashcards/cards/by-set/${setId}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
       
       if (cardsRes.status === 404) {
   document.getElementById('setTitle').textContent = 'This flashcard set has been deleted.';
@@ -199,12 +206,7 @@
         sessionStorage.setItem('recentViewedSets', JSON.stringify(viewedIds));
       }
 
-      const cardsRes = await fetch(`/api/flashcards/cards/by-set/${setId}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
+
       
       if (!cardsRes.ok) {
         throw new Error(`HTTP ${cardsRes.status}: ${cardsRes.statusText}`);
